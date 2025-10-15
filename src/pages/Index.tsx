@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { InventoryItem } from '@/types/inventory';
 import { InventoryTable } from '@/components/InventoryTable';
 import { ItemDialog } from '@/components/ItemDialog';
-import { Button } from '@/components/ui/button';
+import { SummarySection } from '@/components/SummarySection';
+import { RationSection } from '@/components/RationSection';
 import { exportToExcel, exportToPDF, calculateSummary } from '@/utils/exportUtils';
-import { Plus, FileDown, FileSpreadsheet, Calendar, Package } from 'lucide-react';
+import { Plus, FileDown, FileSpreadsheet, Calendar, Package, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
 const sampleItems: InventoryItem[] = [
@@ -66,6 +67,22 @@ const sampleItems: InventoryItem[] = [
       ] 
     },
     expenditureThisMonth: { qty: 210 }
+  },
+  {
+    id: 4,
+    name: 'Mineral Water',
+    unit: 'L',
+    prevMonth: { 
+      batches: [
+        { id: 1, qty: 200, rate: 0.5 }
+      ]
+    },
+    receivedThisMonth: { 
+      batches: [
+        { id: 2, qty: 300, rate: 0.55 }
+      ] 
+    },
+    expenditureThisMonth: { qty: 350 }
   }
 ];
 
@@ -133,106 +150,86 @@ const Index = () => {
   const summary = calculateSummary(items);
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-[1900px] mx-auto space-y-6">
+    <div className="min-h-screen p-4 md:p-6">
+      <div className="max-width mx-auto space-y-6">
         {/* Header */}
         <header className="text-center mb-8">
-          <div className="inline-flex items-center gap-4 glass-panel px-12 py-6 rounded-3xl">
-            <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center">
-              <Package className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center gap-4 glass-panel px-8 md:px-12 py-6 rounded-3xl">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full gradient-primary flex items-center justify-center shadow-lg animate-float">
+              <Package className="w-8 h-8 md:w-10 md:h-10 text-white" />
             </div>
             <div className="text-left">
-              <h1 className="text-4xl font-bold gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-4xl font-bold gradient-primary bg-clip-text text-transparent">
                 Advanced FIFO Inventory
               </h1>
-              <p className="text-muted-foreground">
-                Professional Inventory Management with Enhanced Batch-Level Reporting
+              <p className="text-sm md:text-base text-muted-foreground">
+                Professional Inventory Management with Enhanced Reporting
               </p>
             </div>
           </div>
         </header>
 
         {/* Controls */}
-        <div className="glass-panel rounded-xl p-6">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="glass-panel rounded-2xl p-4 md:p-6">
+          <div className="flex flex-wrap gap-3 md:gap-4 items-center justify-between">
+            <div className="flex items-center gap-3 bg-white/80 p-3 md:p-4 rounded-xl shadow-sm border border-border min-w-[200px] md:min-w-[360px]">
               <Calendar className="w-5 h-5 text-primary" />
-              <label htmlFor="month" className="font-medium">Select Month:</label>
+              <label htmlFor="month" className="font-semibold text-sm md:text-base">Select Month:</label>
               <input
                 type="month"
                 id="month"
                 value={currentMonth}
                 onChange={(e) => setCurrentMonth(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary outline-none"
+                className="px-3 py-2 rounded-lg border-2 border-border bg-white focus:ring-2 focus:ring-primary outline-none text-sm md:text-base"
               />
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={handleAddNew} className="gradient-primary">
-                <Plus className="w-4 h-4 mr-2" />
-                Add New Item
-              </Button>
+            <div className="flex flex-wrap gap-2 md:gap-3">
+              <button onClick={handleAddNew} className="btn-gradient-primary">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Add New Item</span>
+              </button>
               
-              <Button onClick={handleExportExcel} variant="outline" className="border-success text-success hover:bg-success/10">
-                <FileSpreadsheet className="w-4 h-4 mr-2" />
-                Export to Excel
-              </Button>
+              <button onClick={() => {}} className="btn-gradient-import">
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Import Excel</span>
+              </button>
               
-              <Button onClick={handleExportPDF} variant="outline" className="border-accent text-accent hover:bg-accent/10">
-                <FileDown className="w-4 h-4 mr-2" />
-                Export to PDF
-              </Button>
+              <button onClick={handleExportExcel} className="btn-gradient-excel">
+                <FileSpreadsheet className="w-4 h-4" />
+                <span className="hidden sm:inline">Export Excel</span>
+              </button>
+              
+              <button onClick={handleExportPDF} className="btn-gradient-pdf">
+                <FileDown className="w-4 h-4" />
+                <span className="hidden sm:inline">Export PDF</span>
+              </button>
             </div>
-          </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <div className="glass-panel rounded-xl p-4 border-l-4 border-purple-500">
-            <div className="text-sm text-muted-foreground mb-1">Previous Month Total</div>
-            <div className="text-2xl font-bold">₹{summary.prevMonthTotal.amount.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">{summary.prevMonthTotal.qty.toFixed(2)} units</div>
-          </div>
-          
-          <div className="glass-panel rounded-xl p-4 border-l-4 border-pink-500">
-            <div className="text-sm text-muted-foreground mb-1">Received This Month</div>
-            <div className="text-2xl font-bold">₹{summary.receivedThisMonthTotal.amount.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">{summary.receivedThisMonthTotal.qty.toFixed(2)} units</div>
-          </div>
-          
-          <div className="glass-panel rounded-xl p-4 border-l-4 border-cyan-500">
-            <div className="text-sm text-muted-foreground mb-1">Total Received</div>
-            <div className="text-2xl font-bold">₹{summary.totalReceivedTotal.amount.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">{summary.totalReceivedTotal.qty.toFixed(2)} units</div>
-          </div>
-          
-          <div className="glass-panel rounded-xl p-4 border-l-4 border-orange-500">
-            <div className="text-sm text-muted-foreground mb-1">Total Expenditure</div>
-            <div className="text-2xl font-bold">₹{summary.totalExpenditureTotal.amount.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">{summary.totalExpenditureTotal.qty.toFixed(2)} units</div>
-          </div>
-          
-          <div className="glass-panel rounded-xl p-4 border-l-4 border-green-500">
-            <div className="text-sm text-muted-foreground mb-1">Balance Next Month</div>
-            <div className="text-2xl font-bold">₹{summary.balanceNextMonthTotal.amount.toFixed(2)}</div>
-            <div className="text-xs text-muted-foreground">{summary.balanceNextMonthTotal.qty.toFixed(2)} units</div>
           </div>
         </div>
 
         {/* Table */}
         {items.length > 0 ? (
-          <InventoryTable items={items} onEdit={handleEdit} onDelete={handleDelete} />
+          <div className="glass-panel rounded-2xl overflow-hidden shadow-xl border border-border">
+            <InventoryTable items={items} onEdit={handleEdit} onDelete={handleDelete} summary={summary} />
+          </div>
         ) : (
-          <div className="glass-panel rounded-xl p-12 text-center">
-            <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <div className="glass-panel rounded-2xl p-12 text-center">
+            <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
             <h3 className="text-xl font-semibold mb-2">No items yet</h3>
             <p className="text-muted-foreground mb-6">Add your first inventory item to get started</p>
-            <Button onClick={handleAddNew} className="gradient-primary">
-              <Plus className="w-4 h-4 mr-2" />
+            <button onClick={handleAddNew} className="btn-gradient-primary">
+              <Plus className="w-4 h-4" />
               Add First Item
-            </Button>
+            </button>
           </div>
         )}
+
+        {/* Summary Section */}
+        <SummarySection summary={summary} />
+
+        {/* Ration & Attendance Section */}
+        <RationSection summary={summary} />
 
         {/* Dialog */}
         <ItemDialog
@@ -241,19 +238,6 @@ const Index = () => {
           item={editingItem}
           onSave={handleSaveItem}
         />
-
-        {/* Info Note */}
-        <div className="glass-panel rounded-xl p-6 border-l-4 border-primary">
-          <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5" />
-            Export Feature Note
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            ✨ <strong>Batch-Level Export:</strong> When you export to Excel or PDF, the system will display the <strong>maximum number of batch rows</strong> for each item. 
-            For example, if Previous Month has 5 batches and Received This Month has 3 batches, the export will show 5 rows for that item, 
-            ensuring all batch details are visible with proper alignment across columns.
-          </p>
-        </div>
       </div>
     </div>
   );

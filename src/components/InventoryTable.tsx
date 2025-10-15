@@ -1,4 +1,4 @@
-import { InventoryItem } from '@/types/inventory';
+import { InventoryItem, SummaryData } from '@/types/inventory';
 import { calculateFIFORate, calculateTotalReceived, calculateExpenditureBatches, calculateBalanceNextMonth } from '@/utils/fifoCalculations';
 import { Edit, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
@@ -7,9 +7,10 @@ interface InventoryTableProps {
   items: InventoryItem[];
   onEdit: (item: InventoryItem) => void;
   onDelete: (id: number) => void;
+  summary: SummaryData;
 }
 
-export function InventoryTable({ items, onEdit, onDelete }: InventoryTableProps) {
+export function InventoryTable({ items, onEdit, onDelete, summary }: InventoryTableProps) {
   return (
     <div className="overflow-x-auto rounded-xl glass-panel">
       <table className="w-full text-sm">
@@ -121,6 +122,29 @@ export function InventoryTable({ items, onEdit, onDelete }: InventoryTableProps)
             );
           })}
         </tbody>
+        <tfoot>
+          <tr className="bg-primary text-primary-foreground font-bold">
+            <td colSpan={3} className="border border-white/20 px-3 py-3 text-center uppercase tracking-wide">
+              GRAND TOTALS
+            </td>
+            <td className="border border-white/20 px-3 py-2 text-right">{summary.prevMonthTotal.qty.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2"></td>
+            <td className="border border-white/20 px-3 py-2 text-right">₹{summary.prevMonthTotal.amount.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2 text-right">{summary.receivedThisMonthTotal.qty.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2"></td>
+            <td className="border border-white/20 px-3 py-2 text-right">₹{summary.receivedThisMonthTotal.amount.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2 text-right">{summary.totalReceivedTotal.qty.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2"></td>
+            <td className="border border-white/20 px-3 py-2 text-right">₹{summary.totalReceivedTotal.amount.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2 text-right">{summary.totalExpenditureTotal.qty.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2"></td>
+            <td className="border border-white/20 px-3 py-2 text-right">₹{summary.totalExpenditureTotal.amount.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2 text-right">{summary.balanceNextMonthTotal.qty.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2"></td>
+            <td className="border border-white/20 px-3 py-2 text-right">₹{summary.balanceNextMonthTotal.amount.toFixed(2)}</td>
+            <td className="border border-white/20 px-3 py-2"></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );
