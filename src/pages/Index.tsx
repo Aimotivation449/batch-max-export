@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { InventoryItem } from '@/types/inventory';
 import { InventoryTable } from '@/components/InventoryTable';
-import { ItemDialog } from '@/components/ItemDialog';
 import { SummarySection } from '@/components/SummarySection';
 import { RationSection } from '@/components/RationSection';
 import { exportToExcel, exportToPDF, calculateSummary } from '@/utils/exportUtils';
@@ -89,8 +88,30 @@ const sampleItems: InventoryItem[] = [
 const Index = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [editableSummary, setEditableSummary] = useState({
+    prevMonthFresh: 9000,
+    thisMonthPurchased: 8000,
+    totalFreshPurchased: 17000,
+    expendituresMonth: 12000,
+    balanceNextMonth: 5000
+  });
+  const [rationData, setRationData] = useState({
+    casualDiet: 0,
+    riPerson: 0,
+    baraKhana: 0
+  });
+  const [attendanceData, setAttendanceData] = useState({
+    totalAttendance: 450,
+    lessCasualAttendance: 0,
+    lessRiAttendance: 0,
+    netAttendance: 450,
+    totalDaysMonth: 30,
+    rmaPerMonth: 5000,
+    perDayDietAmount: 166.67,
+    recoveryFromJawans: 0,
+    totalRationExpenditure: 0,
+    messProfit: 0
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem('fifo-inventory');
@@ -107,44 +128,30 @@ const Index = () => {
     }
   }, [items]);
 
-  const handleSaveItem = (item: InventoryItem) => {
-    if (editingItem) {
-      setItems(items.map(i => i.id === item.id ? item : i));
-      toast.success('Item updated successfully');
-    } else {
-      setItems([...items, item]);
-      toast.success('Item added successfully');
-    }
-    setEditingItem(null);
-  };
-
-  const handleEdit = (item: InventoryItem) => {
-    setEditingItem(item);
-    setDialogOpen(true);
-  };
-
-  const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this item?')) {
-      setItems(items.filter(i => i.id !== id));
-      toast.success('Item deleted successfully');
-    }
+  const handleAddNew = () => {
+    const newId = Math.max(0, ...items.map(i => i.id)) + 1;
+    const newItem: InventoryItem = {
+      id: newId,
+      name: `New Item ${newId}`,
+      unit: 'Unit',
+      prevMonth: { batches: [] },
+      receivedThisMonth: { batches: [] },
+      expenditureThisMonth: { qty: 0 }
+    };
+    setItems([...items, newItem]);
+    toast.success('New item added');
   };
 
   const handleExportExcel = () => {
     const monthName = new Date(currentMonth).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-    exportToExcel(items, monthName);
-    toast.success('Excel exported successfully with maximum batch rows!');
+    exportToExcel(items, monthName, editableSummary, rationData, attendanceData);
+    toast.success('Excel exported successfully!');
   };
 
   const handleExportPDF = () => {
     const monthName = new Date(currentMonth).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-    exportToPDF(items, monthName);
-    toast.success('PDF exported successfully with maximum batch rows!');
-  };
-
-  const handleAddNew = () => {
-    setEditingItem(null);
-    setDialogOpen(true);
+    exportToPDF(items, monthName, editableSummary, rationData, attendanceData);
+    toast.success('PDF exported successfully!');
   };
 
   const summary = calculateSummary(items);
@@ -211,7 +218,7 @@ const Index = () => {
         {/* Table */}
         {items.length > 0 ? (
           <div className="glass-panel rounded-2xl overflow-hidden shadow-xl border border-border">
-            <InventoryTable items={items} onEdit={handleEdit} onDelete={handleDelete} summary={summary} />
+            <InventoryTable items={items} onUpdate={setItems} />
           </div>
         ) : (
           <div className="glass-panel rounded-2xl p-12 text-center">
@@ -230,14 +237,6 @@ const Index = () => {
 
         {/* Ration & Attendance Section */}
         <RationSection summary={summary} />
-
-        {/* Dialog */}
-        <ItemDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          item={editingItem}
-          onSave={handleSaveItem}
-        />
       </div>
     </div>
   );

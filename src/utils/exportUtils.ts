@@ -125,17 +125,17 @@ export function calculateSummary(items: InventoryItem[]): SummaryData {
   };
 }
 
-export function exportToExcel(items: InventoryItem[], monthName: string) {
+export function exportToExcel(items: InventoryItem[], monthName: string, editableSummary: any, rationData: any, attendanceData: any) {
   const wb = XLSX.utils.book_new();
+  const summary = calculateSummary(items);
   
-  // Create main table with batch rows
-  const data: any[][] = [];
-  
-  // Headers
-  data.push(['FIFO INVENTORY MANAGEMENT SYSTEM']);
-  data.push(['Month:', monthName]);
-  data.push([]);
-  data.push([
+  // Sheet 1: Main Inventory Table
+  const mainData: any[][] = [];
+  mainData.push(['FIFO INVENTORY MANAGEMENT SYSTEM']);
+  mainData.push([]);
+  mainData.push(['Month:', monthName]);
+  mainData.push([]);
+  mainData.push([
     'Sl No', 'Item Name', 'Unit',
     'Previous Month', '', '',
     'Received This Month', '', '',
@@ -143,7 +143,7 @@ export function exportToExcel(items: InventoryItem[], monthName: string) {
     'Expenditure This Month', '', '',
     'Balance Next Month', '', ''
   ]);
-  data.push([
+  mainData.push([
     '', '', '',
     'Qty', 'Rate', 'Amount',
     'Qty', 'Rate', 'Amount',
@@ -152,37 +152,50 @@ export function exportToExcel(items: InventoryItem[], monthName: string) {
     'Qty', 'Rate', 'Amount'
   ]);
   
-  // Add data rows - with maximum batches per item
   items.forEach((item, index) => {
-    const batchRows = createBatchRows(item, index + 1);
-    batchRows.forEach(row => {
-      data.push([
-        row.slNo || '',
-        row.itemName,
-        row.unit,
-        row.prevMonth.qty,
-        row.prevMonth.rate,
-        row.prevMonth.amount,
-        row.receivedThisMonth.qty,
-        row.receivedThisMonth.rate,
-        row.receivedThisMonth.amount,
-        row.totalReceived.qty,
-        row.totalReceived.rate,
-        row.totalReceived.amount,
-        row.expenditure.qty,
-        row.expenditure.rate,
-        row.expenditure.amount,
-        row.balance.qty,
-        row.balance.rate,
-        row.balance.amount
-      ]);
-    });
+    const prevBatches = item.prevMonth.batches || [];
+    const receivedBatches = item.receivedThisMonth.batches || [];
+    
+    const prevSummary = {
+      qty: prevBatches.reduce((sum, b) => sum + b.qty, 0),
+      rate: calculateFIFORate(prevBatches),
+      amount: prevBatches.reduce((sum, b) => sum + b.qty * b.rate, 0)
+    };
+    
+    const receivedSummary = {
+      qty: receivedBatches.reduce((sum, b) => sum + b.qty, 0),
+      rate: calculateFIFORate(receivedBatches),
+      amount: receivedBatches.reduce((sum, b) => sum + b.qty * b.rate, 0)
+    };
+    
+    const totalReceived = calculateTotalReceived(item);
+    const expenditureData = calculateExpenditureBatches(item);
+    const balanceData = calculateBalanceNextMonth(item);
+    
+    mainData.push([
+      index + 1,
+      item.name,
+      item.unit,
+      prevSummary.qty.toFixed(2),
+      prevSummary.rate.toFixed(2),
+      prevSummary.amount.toFixed(2),
+      receivedSummary.qty.toFixed(2),
+      receivedSummary.rate.toFixed(2),
+      receivedSummary.amount.toFixed(2),
+      totalReceived.qty.toFixed(2),
+      totalReceived.rate.toFixed(2),
+      totalReceived.amount.toFixed(2),
+      item.expenditureThisMonth.qty.toFixed(2),
+      expenditureData.rate.toFixed(2),
+      expenditureData.amount.toFixed(2),
+      balanceData.qty.toFixed(2),
+      balanceData.rate.toFixed(2),
+      balanceData.amount.toFixed(2)
+    ]);
   });
   
-  // Add totals
-  const summary = calculateSummary(items);
-  data.push([]);
-  data.push([
+  mainData.push([]);
+  mainData.push([
     'GRAND TOTALS', '', '',
     summary.prevMonthTotal.qty.toFixed(2), '', summary.prevMonthTotal.amount.toFixed(2),
     summary.receivedThisMonthTotal.qty.toFixed(2), '', summary.receivedThisMonthTotal.amount.toFixed(2),
@@ -191,10 +204,8 @@ export function exportToExcel(items: InventoryItem[], monthName: string) {
     summary.balanceNextMonthTotal.qty.toFixed(2), '', summary.balanceNextMonthTotal.amount.toFixed(2)
   ]);
   
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  
-  // Set column widths
-  ws['!cols'] = [
+  const wsMain = XLSX.utils.aoa_to_sheet(mainData);
+  wsMain['!cols'] = [
     { width: 6 }, { width: 25 }, { width: 8 },
     { width: 10 }, { width: 10 }, { width: 12 },
     { width: 10 }, { width: 10 }, { width: 12 },
@@ -202,57 +213,135 @@ export function exportToExcel(items: InventoryItem[], monthName: string) {
     { width: 10 }, { width: 10 }, { width: 12 },
     { width: 10 }, { width: 10 }, { width: 12 }
   ];
+  XLSX.utils.book_append_sheet(wb, wsMain, "Inventory Table");
   
-  XLSX.utils.book_append_sheet(wb, ws, "Inventory");
+  // Sheet 2: Summary
+  const summaryData: any[][] = [];
+  summaryData.push(['INVENTORY SUMMARY REPORT']);
+  summaryData.push([]);
+  summaryData.push(['Month:', monthName]);
+  summaryData.push([]);
+  summaryData.push(['INVENTORY SUMMARY']);
+  summaryData.push(['Description', 'Quantity', 'Amount (₹)']);
+  summaryData.push(['Previous Month Total', summary.prevMonthTotal.qty.toFixed(2), summary.prevMonthTotal.amount.toFixed(2)]);
+  summaryData.push(['Received This Month Total', summary.receivedThisMonthTotal.qty.toFixed(2), summary.receivedThisMonthTotal.amount.toFixed(2)]);
+  summaryData.push(['Total Received This Month', summary.totalReceivedTotal.qty.toFixed(2), summary.totalReceivedTotal.amount.toFixed(2)]);
+  summaryData.push(['Total Expenditure This Month', summary.totalExpenditureTotal.qty.toFixed(2), summary.totalExpenditureTotal.amount.toFixed(2)]);
+  summaryData.push(['Balance Next Month', summary.balanceNextMonthTotal.qty.toFixed(2), summary.balanceNextMonthTotal.amount.toFixed(2)]);
+  summaryData.push([]);
+  summaryData.push(['ADDITIONAL SUMMARY']);
+  summaryData.push(['Description', 'Amount (₹)']);
+  summaryData.push(['Previous month Fresh Received', editableSummary.prevMonthFresh.toFixed(2)]);
+  summaryData.push(['This month Fresh purchased', editableSummary.thisMonthPurchased.toFixed(2)]);
+  summaryData.push(['Total fresh purchased', editableSummary.totalFreshPurchased.toFixed(2)]);
+  summaryData.push(['Expenditures this month', editableSummary.expendituresMonth.toFixed(2)]);
+  summaryData.push(['Balance for next month', editableSummary.balanceNextMonth.toFixed(2)]);
+  
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+  wsSummary['!cols'] = [{ width: 35 }, { width: 15 }, { width: 15 }];
+  XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+  
+  // Sheet 3: Ration & Attendance
+  const rationSheetData: any[][] = [];
+  rationSheetData.push(['RATION CONSUMPTION & ATTENDANCE REPORT']);
+  rationSheetData.push([]);
+  rationSheetData.push(['Month:', monthName]);
+  rationSheetData.push([]);
+  rationSheetData.push(['RATION CONSUMPTION CALCULATION']);
+  rationSheetData.push(['Description', 'Amount (₹)']);
+  rationSheetData.push(['DRY RATION CONSUMED', summary.totalExpenditureTotal.amount.toFixed(2)]);
+  rationSheetData.push(['FRESH RATION CONSUMED', editableSummary.expendituresMonth.toFixed(2)]);
+  const totalRation = summary.totalExpenditureTotal.amount + editableSummary.expendituresMonth;
+  rationSheetData.push(['TOTAL RATION CONSUMED', totalRation.toFixed(2)]);
+  rationSheetData.push(['LESS CASUAL DIET AMOUNT', rationData.casualDiet.toFixed(2)]);
+  rationSheetData.push(['LESS RI PERSON AMOUNT', rationData.riPerson.toFixed(2)]);
+  rationSheetData.push(['LESS BARA KHANA AMOUNT', rationData.baraKhana.toFixed(2)]);
+  const netAmount = totalRation - rationData.casualDiet - rationData.riPerson - rationData.baraKhana;
+  rationSheetData.push(['NET AMOUNT', netAmount.toFixed(2)]);
+  rationSheetData.push([]);
+  rationSheetData.push(['ATTENDANCE & DIET CALCULATION']);
+  rationSheetData.push(['Description', 'Value']);
+  rationSheetData.push(['Total attendance', attendanceData.totalAttendance]);
+  rationSheetData.push(['LESS CASUAL ATTENDENCE', attendanceData.lessCasualAttendance]);
+  rationSheetData.push(['LESS RI ATTENDENCE', attendanceData.lessRiAttendance]);
+  rationSheetData.push(['NET ATTENDENCE', attendanceData.netAttendance]);
+  rationSheetData.push(['TOTAL DAYS IN THIS MONTH', attendanceData.totalDaysMonth]);
+  rationSheetData.push(['RMA PER MONTH (₹)', attendanceData.rmaPerMonth.toFixed(2)]);
+  rationSheetData.push(['PER DAY DIET-AMOUNT (₹)', attendanceData.perDayDietAmount.toFixed(2)]);
+  rationSheetData.push(['RECOVERY FROM JAWAN\'S (₹)', attendanceData.recoveryFromJawans.toFixed(2)]);
+  rationSheetData.push(['TOTAL RATION EXPENDITURED/MONTH (₹)', attendanceData.totalRationExpenditure.toFixed(2)]);
+  rationSheetData.push(['MESS PROFIT (₹)', attendanceData.messProfit.toFixed(2)]);
+  
+  const wsRation = XLSX.utils.aoa_to_sheet(rationSheetData);
+  wsRation['!cols'] = [{ width: 40 }, { width: 20 }];
+  XLSX.utils.book_append_sheet(wb, wsRation, "Ration & Attendance");
+  
   XLSX.writeFile(wb, `FIFO_Inventory_${monthName.replace(/\s+/g, '_')}.xlsx`);
 }
 
-export function exportToPDF(items: InventoryItem[], monthName: string) {
+export function exportToPDF(items: InventoryItem[], monthName: string, editableSummary: any, rationData: any, attendanceData: any) {
   const doc = new jsPDF({
     orientation: 'landscape',
     unit: 'mm',
     format: 'a3'
   });
   
-  // Title
-  doc.setFontSize(20);
-  doc.text('FIFO Inventory Management System', doc.internal.pageSize.width / 2, 20, { align: 'center' });
+  const summary = calculateSummary(items);
+  
+  // Title Page
+  doc.setFontSize(24);
+  doc.text('FIFO INVENTORY MANAGEMENT SYSTEM', doc.internal.pageSize.width / 2, 50, { align: 'center' });
+  doc.setFontSize(18);
+  doc.text(`Report for ${monthName}`, doc.internal.pageSize.width / 2, 70, { align: 'center' });
   doc.setFontSize(14);
-  doc.text(`Month: ${monthName}`, doc.internal.pageSize.width / 2, 30, { align: 'center' });
+  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.width / 2, 85, { align: 'center' });
   
-  // Prepare table data with batch rows
-  const tableData: any[][] = [];
+  // Inventory Table
+  doc.addPage();
+  doc.setFontSize(12);
+  doc.text(`INVENTORY TABLE - ${monthName}`, 20, 20);
   
-  items.forEach((item, index) => {
-    const batchRows = createBatchRows(item, index + 1);
-    batchRows.forEach(row => {
-      tableData.push([
-        row.slNo || '',
-        row.itemName,
-        row.unit,
-        row.prevMonth.qty,
-        row.prevMonth.rate,
-        row.prevMonth.amount,
-        row.receivedThisMonth.qty,
-        row.receivedThisMonth.rate,
-        row.receivedThisMonth.amount,
-        row.totalReceived.qty,
-        row.totalReceived.rate,
-        row.totalReceived.amount,
-        row.expenditure.qty,
-        row.expenditure.rate,
-        row.expenditure.amount,
-        row.balance.qty,
-        row.balance.rate,
-        row.balance.amount
-      ]);
-    });
+  const tableData: any[][] = items.map((item, index) => {
+    const prevBatches = item.prevMonth.batches || [];
+    const receivedBatches = item.receivedThisMonth.batches || [];
+    const prevSummary = {
+      qty: prevBatches.reduce((sum, b) => sum + b.qty, 0),
+      rate: calculateFIFORate(prevBatches),
+      amount: prevBatches.reduce((sum, b) => sum + b.qty * b.rate, 0)
+    };
+    const receivedSummary = {
+      qty: receivedBatches.reduce((sum, b) => sum + b.qty, 0),
+      rate: calculateFIFORate(receivedBatches),
+      amount: receivedBatches.reduce((sum, b) => sum + b.qty * b.rate, 0)
+    };
+    const totalReceived = calculateTotalReceived(item);
+    const expenditureData = calculateExpenditureBatches(item);
+    const balanceData = calculateBalanceNextMonth(item);
+    
+    return [
+      (index + 1).toString(),
+      item.name,
+      item.unit,
+      prevSummary.qty.toFixed(2),
+      prevSummary.rate.toFixed(2),
+      prevSummary.amount.toFixed(2),
+      receivedSummary.qty.toFixed(2),
+      receivedSummary.rate.toFixed(2),
+      receivedSummary.amount.toFixed(2),
+      totalReceived.qty.toFixed(2),
+      totalReceived.rate.toFixed(2),
+      totalReceived.amount.toFixed(2),
+      item.expenditureThisMonth.qty.toFixed(2),
+      expenditureData.rate.toFixed(2),
+      expenditureData.amount.toFixed(2),
+      balanceData.qty.toFixed(2),
+      balanceData.rate.toFixed(2),
+      balanceData.amount.toFixed(2)
+    ];
   });
   
-  // Add totals
-  const summary = calculateSummary(items);
   tableData.push([
-    'TOTALS', '', '',
+    { content: 'GRAND TOTALS', colSpan: 3 },
     summary.prevMonthTotal.qty.toFixed(2), '', summary.prevMonthTotal.amount.toFixed(2),
     summary.receivedThisMonthTotal.qty.toFixed(2), '', summary.receivedThisMonthTotal.amount.toFixed(2),
     summary.totalReceivedTotal.qty.toFixed(2), '', summary.totalReceivedTotal.amount.toFixed(2),
@@ -279,11 +368,88 @@ export function exportToPDF(items: InventoryItem[], monthName: string) {
       'Qty', 'Rate', 'Amount'
     ]],
     body: tableData,
-    startY: 40,
+    startY: 25,
     theme: 'grid',
     headStyles: { fillColor: [102, 126, 234], fontSize: 8 },
     bodyStyles: { fontSize: 7 },
     styles: { cellPadding: 1 }
+  });
+  
+  // Summary Page
+  doc.addPage();
+  doc.setFontSize(16);
+  doc.text('INVENTORY SUMMARY', 20, 20);
+  
+  autoTable(doc, {
+    startY: 30,
+    head: [['Description', 'Quantity', 'Amount (₹)']],
+    body: [
+      ['Previous Month Total', summary.prevMonthTotal.qty.toFixed(2), summary.prevMonthTotal.amount.toFixed(2)],
+      ['Received This Month Total', summary.receivedThisMonthTotal.qty.toFixed(2), summary.receivedThisMonthTotal.amount.toFixed(2)],
+      ['Total Received', summary.totalReceivedTotal.qty.toFixed(2), summary.totalReceivedTotal.amount.toFixed(2)],
+      ['Total Expenditure', summary.totalExpenditureTotal.qty.toFixed(2), summary.totalExpenditureTotal.amount.toFixed(2)],
+      ['Balance Next Month', summary.balanceNextMonthTotal.qty.toFixed(2), summary.balanceNextMonthTotal.amount.toFixed(2)]
+    ],
+    theme: 'striped'
+  });
+  
+  const lastY = (doc as any).lastAutoTable.finalY + 15;
+  doc.setFontSize(16);
+  doc.text('ADDITIONAL SUMMARY', 20, lastY);
+  
+  autoTable(doc, {
+    startY: lastY + 5,
+    head: [['Description', 'Amount (₹)']],
+    body: [
+      ['Previous month Fresh Received', editableSummary.prevMonthFresh.toFixed(2)],
+      ['This month Fresh purchased', editableSummary.thisMonthPurchased.toFixed(2)],
+      ['Total fresh purchased', editableSummary.totalFreshPurchased.toFixed(2)],
+      ['Expenditures this month', editableSummary.expendituresMonth.toFixed(2)],
+      ['Balance for next month', editableSummary.balanceNextMonth.toFixed(2)]
+    ],
+    theme: 'striped'
+  });
+  
+  // Ration & Attendance Page
+  doc.addPage();
+  doc.setFontSize(16);
+  doc.text('RATION CONSUMPTION & ATTENDANCE', 20, 20);
+  
+  const totalRation = summary.totalExpenditureTotal.amount + editableSummary.expendituresMonth;
+  const netAmount = totalRation - rationData.casualDiet - rationData.riPerson - rationData.baraKhana;
+  
+  autoTable(doc, {
+    startY: 30,
+    head: [['Ration Consumption', 'Amount (₹)']],
+    body: [
+      ['DRY RATION CONSUMED', summary.totalExpenditureTotal.amount.toFixed(2)],
+      ['FRESH RATION CONSUMED', editableSummary.expendituresMonth.toFixed(2)],
+      ['TOTAL RATION CONSUMED', totalRation.toFixed(2)],
+      ['LESS CASUAL DIET', rationData.casualDiet.toFixed(2)],
+      ['LESS RI PERSON', rationData.riPerson.toFixed(2)],
+      ['LESS BARA KHANA', rationData.baraKhana.toFixed(2)],
+      ['NET AMOUNT', netAmount.toFixed(2)]
+    ],
+    theme: 'striped'
+  });
+  
+  const lastYRation = (doc as any).lastAutoTable.finalY + 15;
+  autoTable(doc, {
+    startY: lastYRation,
+    head: [['Attendance & Diet', 'Value']],
+    body: [
+      ['Total attendance', attendanceData.totalAttendance.toString()],
+      ['LESS CASUAL ATTENDENCE', attendanceData.lessCasualAttendance.toString()],
+      ['LESS RI ATTENDENCE', attendanceData.lessRiAttendance.toString()],
+      ['NET ATTENDENCE', attendanceData.netAttendance.toString()],
+      ['TOTAL DAYS', attendanceData.totalDaysMonth.toString()],
+      ['RMA PER MONTH (₹)', attendanceData.rmaPerMonth.toFixed(2)],
+      ['PER DAY DIET (₹)', attendanceData.perDayDietAmount.toFixed(2)],
+      ['RECOVERY (₹)', attendanceData.recoveryFromJawans.toFixed(2)],
+      ['TOTAL EXPENDITURE (₹)', attendanceData.totalRationExpenditure.toFixed(2)],
+      ['MESS PROFIT (₹)', attendanceData.messProfit.toFixed(2)]
+    ],
+    theme: 'striped'
   });
   
   doc.save(`FIFO_Inventory_${monthName.replace(/\s+/g, '_')}.pdf`);
