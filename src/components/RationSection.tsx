@@ -52,7 +52,7 @@ export function RationSection({ summary }: RationSectionProps) {
   useEffect(() => {
     const netAtt = attendanceData.totalAttendance - attendanceData.lessCasualAttendance - attendanceData.lessRiAttendance;
     const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-    const perDay = netAtt > 0 && daysInMonth > 0 ? attendanceData.rmaPerMonth / (netAtt * daysInMonth) : 0;
+    const perDay = daysInMonth > 0 ? attendanceData.rmaPerMonth / daysInMonth : 0;
     const totalExp = netAtt * daysInMonth * perDay;
     const profit = attendanceData.recoveryFromJawans - totalExp;
 
