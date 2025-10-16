@@ -69,15 +69,14 @@ export function RationSection({ summary }: RationSectionProps) {
     const netAtt = attendanceData.totalAttendance - attendanceData.lessCasualAttendance - attendanceData.lessRiAttendance;
     const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
     const perDay = daysInMonth > 0 ? attendanceData.rmaPerMonth / daysInMonth : 0;
-    const totalExp = netAtt * daysInMonth * perDay;
-    const profit = attendanceData.recoveryFromJawans - totalExp;
+    const profit = attendanceData.recoveryFromJawans - netAmount;
 
     setAttendanceData(prev => ({
       ...prev,
       netAttendance: netAtt,
       totalDaysMonth: daysInMonth,
       perDayDietAmount: parseFloat(perDay.toFixed(2)),
-      totalRationExpenditure: totalExp,
+      totalRationExpenditure: netAmount,
       messProfit: profit
     }));
   }, [
@@ -85,7 +84,8 @@ export function RationSection({ summary }: RationSectionProps) {
     attendanceData.lessCasualAttendance,
     attendanceData.lessRiAttendance,
     attendanceData.rmaPerMonth,
-    attendanceData.recoveryFromJawans
+    attendanceData.recoveryFromJawans,
+    netAmount
   ]);
 
   return (
