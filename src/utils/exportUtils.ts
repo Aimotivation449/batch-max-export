@@ -12,11 +12,13 @@ export function createBatchRows(item: InventoryItem, slNo: number): BatchRow[] {
   const prevBatches = item.prevMonth.batches || [];
   const receivedBatches = item.receivedThisMonth.batches || [];
   
-  // Key fix: Use the maximum number of batches
-  const maxBatches = Math.max(prevBatches.length, receivedBatches.length);
+  // Combine all batches in FIFO order (previous month first, then received)
+  const allBatches = [
+    ...prevBatches.map((b, idx) => ({ ...b, source: 'prev' as const, sourceIdx: idx })),
+    ...receivedBatches.map((b, idx) => ({ ...b, source: 'received' as const, sourceIdx: idx }))
+  ];
   
-  if (maxBatches === 0) {
-    // No batches at all, return single row with zeros
+  if (allBatches.length === 0) {
     return [{
       slNo,
       itemName: item.name,
@@ -29,27 +31,54 @@ export function createBatchRows(item: InventoryItem, slNo: number): BatchRow[] {
     }];
   }
   
+  // Calculate FIFO expenditure and balance for each batch
+  let remainingExpenditure = item.expenditureThisMonth.qty;
   const rows: BatchRow[] = [];
   
-  // Calculate totals for expenditure and balance (shown only in first row)
-  const totalReceived = calculateTotalReceived(item);
-  const expenditureData = calculateExpenditureBatches(item);
-  const balanceData = calculateBalanceNextMonth(item);
+  // Track which row each batch goes to
+  const maxBatches = Math.max(prevBatches.length, receivedBatches.length);
   
   for (let i = 0; i < maxBatches; i++) {
     const prevBatch = prevBatches[i];
     const receivedBatch = receivedBatches[i];
     
-    // Calculate total received for this row (sum of prev + received batch)
+    // Calculate total received for this row
     const rowTotalQty = (prevBatch?.qty || 0) + (receivedBatch?.qty || 0);
     const rowTotalAmount = ((prevBatch?.qty || 0) * (prevBatch?.rate || 0)) + 
                            ((receivedBatch?.qty || 0) * (receivedBatch?.rate || 0));
     const rowTotalRate = rowTotalQty > 0 ? rowTotalAmount / rowTotalQty : 0;
     
+    // Calculate expenditure for this row using FIFO
+    let rowExpenditureQty = 0;
+    let rowExpenditureAmount = 0;
+    
+    // Process prevBatch expenditure
+    if (prevBatch && remainingExpenditure > 0) {
+      const qtyToUse = Math.min(prevBatch.qty, remainingExpenditure);
+      rowExpenditureQty += qtyToUse;
+      rowExpenditureAmount += qtyToUse * prevBatch.rate;
+      remainingExpenditure -= qtyToUse;
+    }
+    
+    // Process receivedBatch expenditure
+    if (receivedBatch && remainingExpenditure > 0) {
+      const qtyToUse = Math.min(receivedBatch.qty, remainingExpenditure);
+      rowExpenditureQty += qtyToUse;
+      rowExpenditureAmount += qtyToUse * receivedBatch.rate;
+      remainingExpenditure -= qtyToUse;
+    }
+    
+    const rowExpenditureRate = rowExpenditureQty > 0 ? rowExpenditureAmount / rowExpenditureQty : 0;
+    
+    // Calculate balance for this row
+    const rowBalanceQty = rowTotalQty - rowExpenditureQty;
+    const rowBalanceAmount = rowTotalAmount - rowExpenditureAmount;
+    const rowBalanceRate = rowBalanceQty > 0 ? rowBalanceAmount / rowBalanceQty : 0;
+    
     rows.push({
-      slNo: i === 0 ? slNo : 0, // Only show sl no in first row
-      itemName: i === 0 ? item.name : '', // Only show name in first row
-      unit: i === 0 ? item.unit : '', // Only show unit in first row
+      slNo: i === 0 ? slNo : 0,
+      itemName: i === 0 ? item.name : '',
+      unit: i === 0 ? item.unit : '',
       prevMonth: {
         qty: prevBatch ? prevBatch.qty.toFixed(2) : '',
         rate: prevBatch ? prevBatch.rate.toFixed(2) : '',
@@ -65,17 +94,16 @@ export function createBatchRows(item: InventoryItem, slNo: number): BatchRow[] {
         rate: rowTotalRate > 0 ? rowTotalRate.toFixed(2) : '',
         amount: rowTotalAmount > 0 ? rowTotalAmount.toFixed(2) : ''
       },
-      // Show expenditure and balance only in first row
-      expenditure: i === 0 ? {
-        qty: item.expenditureThisMonth.qty.toFixed(2),
-        rate: expenditureData.rate.toFixed(2),
-        amount: expenditureData.amount.toFixed(2)
-      } : { qty: '', rate: '', amount: '' },
-      balance: i === 0 ? {
-        qty: balanceData.qty.toFixed(2),
-        rate: balanceData.rate.toFixed(2),
-        amount: balanceData.amount.toFixed(2)
-      } : { qty: '', rate: '', amount: '' }
+      expenditure: {
+        qty: rowExpenditureQty > 0 ? rowExpenditureQty.toFixed(2) : '',
+        rate: rowExpenditureRate > 0 ? rowExpenditureRate.toFixed(2) : '',
+        amount: rowExpenditureAmount > 0 ? rowExpenditureAmount.toFixed(2) : ''
+      },
+      balance: {
+        qty: rowBalanceQty > 0 ? rowBalanceQty.toFixed(2) : '',
+        rate: rowBalanceRate > 0 ? rowBalanceRate.toFixed(2) : '',
+        amount: rowBalanceAmount > 0 ? rowBalanceAmount.toFixed(2) : ''
+      }
     });
   }
   
