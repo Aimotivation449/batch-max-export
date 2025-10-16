@@ -168,7 +168,7 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
     'Qty', 'Rate', 'Amount'
   ]);
   
-  const startRow = mainData.length + 1; // Track row numbers for styling
+  const startRow = mainData.length; // Track row numbers for styling
   
   items.forEach((item, index) => {
     const batchRows = createBatchRows(item, index + 1);
@@ -195,6 +195,11 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
         row.balance.amount
       ]);
     });
+    
+    // Add separator row after each item (except last)
+    if (index < items.length - 1) {
+      mainData.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+    }
   });
   
   mainData.push([]);
@@ -216,24 +221,6 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
     { width: 10 }, { width: 10 }, { width: 12 },
     { width: 10 }, { width: 10 }, { width: 12 }
   ];
-  
-  // Add darker borders after each item
-  let currentRow = startRow;
-  items.forEach((item, index) => {
-    const batchRows = createBatchRows(item, index + 1);
-    currentRow += batchRows.length;
-    
-    // Apply bottom border styling to the last row of each item
-    for (let col = 0; col < 18; col++) {
-      const cellRef = XLSX.utils.encode_cell({ r: currentRow - 1, c: col });
-      if (!wsMain[cellRef]) wsMain[cellRef] = { t: 's', v: '' };
-      wsMain[cellRef].s = {
-        border: {
-          bottom: { style: 'thick', color: { rgb: '000000' } }
-        }
-      };
-    }
-  });
   
   XLSX.utils.book_append_sheet(wb, wsMain, "Inventory Table");
   
@@ -324,12 +311,13 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
   doc.text(`INVENTORY TABLE - ${monthName}`, 20, 20);
   
   const tableData: any[][] = [];
+  let itemEndRows: number[] = []; // Track which rows are item ends
+  let currentRow = 0;
   
   items.forEach((item, itemIndex) => {
     const batchRows = createBatchRows(item, itemIndex + 1);
     
     batchRows.forEach((row, batchIndex) => {
-      const isLastBatch = batchIndex === batchRows.length - 1;
       tableData.push([
         batchIndex === 0 ? (itemIndex + 1).toString() : '',
         batchIndex === 0 ? item.name : '',
@@ -348,10 +336,13 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
         row.expenditure.amount,
         row.balance.qty,
         row.balance.rate,
-        row.balance.amount,
-        isLastBatch // Mark last batch for styling
+        row.balance.amount
       ]);
+      currentRow++;
     });
+    
+    // Mark the last row of each item
+    itemEndRows.push(currentRow - 1);
   });
   
   tableData.push([
@@ -381,23 +372,29 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
       'Qty', 'Rate', 'Amount',
       'Qty', 'Rate', 'Amount'
     ]],
-    body: tableData.map(row => row.slice(0, -1)), // Remove the marker
+    body: tableData,
     startY: 25,
     theme: 'grid',
     headStyles: { fillColor: [102, 126, 234], fontSize: 8, halign: 'center' },
     bodyStyles: { fontSize: 7 },
-    styles: { cellPadding: 1, valign: 'middle' },
+    styles: { cellPadding: 1, valign: 'middle', lineWidth: 0.1 },
     columnStyles: {
       0: { halign: 'center', valign: 'middle' },
       1: { halign: 'left', valign: 'middle' },
       2: { halign: 'center', valign: 'middle' }
     },
-    didDrawCell: (data: any) => {
-      // Add darker bottom border for last batch of each item
-      if (data.section === 'body' && tableData[data.row.index]?.[18]) {
+    didDrawCell: function(data: any) {
+      // Add thicker bottom border for item end rows
+      if (data.section === 'body' && itemEndRows.includes(data.row.index)) {
+        const doc = data.doc;
+        doc.setLineWidth(0.8);
         doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.5);
-        doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+        doc.line(
+          data.cell.x,
+          data.cell.y + data.cell.height,
+          data.cell.x + data.cell.width,
+          data.cell.y + data.cell.height
+        );
       }
     }
   } as any);
