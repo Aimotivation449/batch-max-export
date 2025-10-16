@@ -153,45 +153,30 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   ]);
   
   items.forEach((item, index) => {
-    const prevBatches = item.prevMonth.batches || [];
-    const receivedBatches = item.receivedThisMonth.batches || [];
+    const batchRows = createBatchRows(item, index + 1);
     
-    const prevSummary = {
-      qty: prevBatches.reduce((sum, b) => sum + b.qty, 0),
-      rate: calculateFIFORate(prevBatches),
-      amount: prevBatches.reduce((sum, b) => sum + b.qty * b.rate, 0)
-    };
-    
-    const receivedSummary = {
-      qty: receivedBatches.reduce((sum, b) => sum + b.qty, 0),
-      rate: calculateFIFORate(receivedBatches),
-      amount: receivedBatches.reduce((sum, b) => sum + b.qty * b.rate, 0)
-    };
-    
-    const totalReceived = calculateTotalReceived(item);
-    const expenditureData = calculateExpenditureBatches(item);
-    const balanceData = calculateBalanceNextMonth(item);
-    
-    mainData.push([
-      index + 1,
-      item.name,
-      item.unit,
-      prevSummary.qty.toFixed(2),
-      prevSummary.rate.toFixed(2),
-      prevSummary.amount.toFixed(2),
-      receivedSummary.qty.toFixed(2),
-      receivedSummary.rate.toFixed(2),
-      receivedSummary.amount.toFixed(2),
-      totalReceived.qty.toFixed(2),
-      totalReceived.rate.toFixed(2),
-      totalReceived.amount.toFixed(2),
-      item.expenditureThisMonth.qty.toFixed(2),
-      expenditureData.rate.toFixed(2),
-      expenditureData.amount.toFixed(2),
-      balanceData.qty.toFixed(2),
-      balanceData.rate.toFixed(2),
-      balanceData.amount.toFixed(2)
-    ]);
+    batchRows.forEach((row) => {
+      mainData.push([
+        row.slNo || '',
+        row.itemName,
+        row.unit,
+        row.prevMonth.qty,
+        row.prevMonth.rate,
+        row.prevMonth.amount,
+        row.receivedThisMonth.qty,
+        row.receivedThisMonth.rate,
+        row.receivedThisMonth.amount,
+        row.totalReceived.qty,
+        row.totalReceived.rate,
+        row.totalReceived.amount,
+        row.expenditure.qty,
+        row.expenditure.rate,
+        row.expenditure.amount,
+        row.balance.qty,
+        row.balance.rate,
+        row.balance.amount
+      ]);
+    });
   });
   
   mainData.push([]);
@@ -296,48 +281,38 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
   doc.setFontSize(14);
   doc.text(`Generated on: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.width / 2, 85, { align: 'center' });
   
-  // Inventory Table
+  // Inventory Table - Batch-wise display
   doc.addPage();
   doc.setFontSize(12);
   doc.text(`INVENTORY TABLE - ${monthName}`, 20, 20);
   
-  const tableData: any[][] = items.map((item, index) => {
-    const prevBatches = item.prevMonth.batches || [];
-    const receivedBatches = item.receivedThisMonth.batches || [];
-    const prevSummary = {
-      qty: prevBatches.reduce((sum, b) => sum + b.qty, 0),
-      rate: calculateFIFORate(prevBatches),
-      amount: prevBatches.reduce((sum, b) => sum + b.qty * b.rate, 0)
-    };
-    const receivedSummary = {
-      qty: receivedBatches.reduce((sum, b) => sum + b.qty, 0),
-      rate: calculateFIFORate(receivedBatches),
-      amount: receivedBatches.reduce((sum, b) => sum + b.qty * b.rate, 0)
-    };
-    const totalReceived = calculateTotalReceived(item);
-    const expenditureData = calculateExpenditureBatches(item);
-    const balanceData = calculateBalanceNextMonth(item);
+  const tableData: any[][] = [];
+  
+  items.forEach((item, itemIndex) => {
+    const batchRows = createBatchRows(item, itemIndex + 1);
     
-    return [
-      (index + 1).toString(),
-      item.name,
-      item.unit,
-      prevSummary.qty.toFixed(2),
-      prevSummary.rate.toFixed(2),
-      prevSummary.amount.toFixed(2),
-      receivedSummary.qty.toFixed(2),
-      receivedSummary.rate.toFixed(2),
-      receivedSummary.amount.toFixed(2),
-      totalReceived.qty.toFixed(2),
-      totalReceived.rate.toFixed(2),
-      totalReceived.amount.toFixed(2),
-      item.expenditureThisMonth.qty.toFixed(2),
-      expenditureData.rate.toFixed(2),
-      expenditureData.amount.toFixed(2),
-      balanceData.qty.toFixed(2),
-      balanceData.rate.toFixed(2),
-      balanceData.amount.toFixed(2)
-    ];
+    batchRows.forEach((row, batchIndex) => {
+      tableData.push([
+        batchIndex === 0 ? (itemIndex + 1).toString() : '',
+        batchIndex === 0 ? item.name : '',
+        batchIndex === 0 ? item.unit : '',
+        row.prevMonth.qty,
+        row.prevMonth.rate,
+        row.prevMonth.amount,
+        row.receivedThisMonth.qty,
+        row.receivedThisMonth.rate,
+        row.receivedThisMonth.amount,
+        row.totalReceived.qty,
+        row.totalReceived.rate,
+        row.totalReceived.amount,
+        row.expenditure.qty,
+        row.expenditure.rate,
+        row.expenditure.amount,
+        row.balance.qty,
+        row.balance.rate,
+        row.balance.amount
+      ]);
+    });
   });
   
   tableData.push([
@@ -370,9 +345,14 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
     body: tableData,
     startY: 25,
     theme: 'grid',
-    headStyles: { fillColor: [102, 126, 234], fontSize: 8 },
+    headStyles: { fillColor: [102, 126, 234], fontSize: 8, halign: 'center' },
     bodyStyles: { fontSize: 7 },
-    styles: { cellPadding: 1 }
+    styles: { cellPadding: 1, valign: 'middle' },
+    columnStyles: {
+      0: { halign: 'center', valign: 'middle' },
+      1: { halign: 'left', valign: 'middle' },
+      2: { halign: 'center', valign: 'middle' }
+    }
   });
   
   // Summary Page
