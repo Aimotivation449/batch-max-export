@@ -168,6 +168,8 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
     'Qty', 'Rate', 'Amount'
   ]);
   
+  const startRow = mainData.length + 1; // Track row numbers for styling
+  
   items.forEach((item, index) => {
     const batchRows = createBatchRows(item, index + 1);
     
@@ -214,6 +216,25 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
     { width: 10 }, { width: 10 }, { width: 12 },
     { width: 10 }, { width: 10 }, { width: 12 }
   ];
+  
+  // Add darker borders after each item
+  let currentRow = startRow;
+  items.forEach((item, index) => {
+    const batchRows = createBatchRows(item, index + 1);
+    currentRow += batchRows.length;
+    
+    // Apply bottom border styling to the last row of each item
+    for (let col = 0; col < 18; col++) {
+      const cellRef = XLSX.utils.encode_cell({ r: currentRow - 1, c: col });
+      if (!wsMain[cellRef]) wsMain[cellRef] = { t: 's', v: '' };
+      wsMain[cellRef].s = {
+        border: {
+          bottom: { style: 'thick', color: { rgb: '000000' } }
+        }
+      };
+    }
+  });
+  
   XLSX.utils.book_append_sheet(wb, wsMain, "Inventory Table");
   
   // Sheet 2: Summary
@@ -308,6 +329,7 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
     const batchRows = createBatchRows(item, itemIndex + 1);
     
     batchRows.forEach((row, batchIndex) => {
+      const isLastBatch = batchIndex === batchRows.length - 1;
       tableData.push([
         batchIndex === 0 ? (itemIndex + 1).toString() : '',
         batchIndex === 0 ? item.name : '',
@@ -326,7 +348,8 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
         row.expenditure.amount,
         row.balance.qty,
         row.balance.rate,
-        row.balance.amount
+        row.balance.amount,
+        isLastBatch // Mark last batch for styling
       ]);
     });
   });
@@ -358,7 +381,7 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
       'Qty', 'Rate', 'Amount',
       'Qty', 'Rate', 'Amount'
     ]],
-    body: tableData,
+    body: tableData.map(row => row.slice(0, -1)), // Remove the marker
     startY: 25,
     theme: 'grid',
     headStyles: { fillColor: [102, 126, 234], fontSize: 8, halign: 'center' },
@@ -368,8 +391,16 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
       0: { halign: 'center', valign: 'middle' },
       1: { halign: 'left', valign: 'middle' },
       2: { halign: 'center', valign: 'middle' }
+    },
+    didDrawCell: (data: any) => {
+      // Add darker bottom border for last batch of each item
+      if (data.section === 'body' && tableData[data.row.index]?.[18]) {
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+      }
     }
-  });
+  } as any);
   
   // Summary Page
   doc.addPage();
