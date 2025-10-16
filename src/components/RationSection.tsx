@@ -38,14 +38,30 @@ export function RationSection({ summary }: RationSectionProps) {
 
   // Update ration data fresh ration to match editable summary
   useEffect(() => {
-    const stored = localStorage.getItem('editable-summary');
-    if (stored) {
-      const editableSummary = JSON.parse(stored);
-      setRationData(prev => ({
-        ...prev,
-        freshRation: editableSummary.expendituresMonth || 0
-      }));
-    }
+    const loadFreshRation = () => {
+      const stored = localStorage.getItem('editable-summary');
+      if (stored) {
+        const editableSummary = JSON.parse(stored);
+        setRationData(prev => ({
+          ...prev,
+          freshRation: editableSummary.expendituresMonth || 0
+        }));
+      }
+    };
+
+    loadFreshRation();
+
+    // Listen for storage changes
+    window.addEventListener('storage', loadFreshRation);
+    
+    // Custom event for same-tab updates
+    const handleStorageUpdate = () => loadFreshRation();
+    window.addEventListener('editable-summary-updated', handleStorageUpdate);
+
+    return () => {
+      window.removeEventListener('storage', loadFreshRation);
+      window.removeEventListener('editable-summary-updated', handleStorageUpdate);
+    };
   }, []);
 
   // Calculate attendance-related values

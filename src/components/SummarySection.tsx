@@ -34,6 +34,8 @@ export function SummarySection({ summary }: SummarySectionProps) {
 
   const handleSave = () => {
     localStorage.setItem('editable-summary', JSON.stringify(editableSummary));
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new Event('editable-summary-updated'));
   };
 
   return (
