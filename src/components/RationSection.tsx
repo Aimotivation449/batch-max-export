@@ -60,7 +60,7 @@ export function RationSection({ summary }: RationSectionProps) {
       ...prev,
       netAttendance: netAtt,
       totalDaysMonth: daysInMonth,
-      perDayDietAmount: perDay,
+      perDayDietAmount: parseFloat(perDay.toFixed(2)),
       totalRationExpenditure: totalExp,
       messProfit: profit
     }));
