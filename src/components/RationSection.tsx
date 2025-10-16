@@ -43,7 +43,7 @@ export function RationSection({ summary }: RationSectionProps) {
       const editableSummary = JSON.parse(stored);
       setRationData(prev => ({
         ...prev,
-        freshRation: editableSummary.totalFreshPurchased || 0
+        freshRation: editableSummary.expendituresMonth || 0
       }));
     }
   }, []);
