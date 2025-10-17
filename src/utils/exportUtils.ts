@@ -145,6 +145,32 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   const wb = XLSX.utils.book_new();
   const summary = calculateSummary(items);
   
+  // Read actual data from localStorage (source of truth)
+  const storedSummary = localStorage.getItem('editable-summary');
+  if (storedSummary) {
+    editableSummary = JSON.parse(storedSummary);
+  }
+  
+  // Calculate attendance data from current values like RationSection does
+  const dryRationConsumed = summary.totalExpenditureTotal.amount;
+  const freshRationConsumed = editableSummary.expendituresMonth || 0;
+  const totalRationConsumed = dryRationConsumed + freshRationConsumed;
+  const calculatedNetAmount = totalRationConsumed - (rationData.casualDiet || 0) - (rationData.riPerson || 0) - (rationData.baraKhana || 0);
+  
+  // Calculate current month's actual days
+  const currentDate = new Date();
+  const totalDaysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  
+  // Update attendance data with calculated values
+  attendanceData = {
+    ...attendanceData,
+    totalDaysMonth: totalDaysInMonth,
+    netAttendance: (attendanceData.totalAttendance || 0) - (attendanceData.lessCasualAttendance || 0) - (attendanceData.lessRiAttendance || 0),
+    perDayDietAmount: totalDaysInMonth > 0 ? (attendanceData.rmaPerMonth || 0) / totalDaysInMonth : 0,
+    totalRationExpenditure: calculatedNetAmount,
+    messProfit: (attendanceData.recoveryFromJawans || 0) - calculatedNetAmount
+  };
+  
   // Sheet 1: Main Inventory Table
   const mainData: any[][] = [];
   mainData.push(['FIFO INVENTORY MANAGEMENT SYSTEM']);
@@ -296,6 +322,32 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
   });
   
   const summary = calculateSummary(items);
+  
+  // Read actual data from localStorage (source of truth)
+  const storedSummary = localStorage.getItem('editable-summary');
+  if (storedSummary) {
+    editableSummary = JSON.parse(storedSummary);
+  }
+  
+  // Calculate attendance data from current values like RationSection does
+  const dryRationConsumedPDF = summary.totalExpenditureTotal.amount;
+  const freshRationConsumedPDF = editableSummary.expendituresMonth || 0;
+  const totalRationConsumedPDF = dryRationConsumedPDF + freshRationConsumedPDF;
+  const calculatedNetAmountPDF = totalRationConsumedPDF - (rationData.casualDiet || 0) - (rationData.riPerson || 0) - (rationData.baraKhana || 0);
+  
+  // Calculate current month's actual days
+  const currentDate = new Date();
+  const totalDaysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  
+  // Update attendance data with calculated values
+  attendanceData = {
+    ...attendanceData,
+    totalDaysMonth: totalDaysInMonth,
+    netAttendance: (attendanceData.totalAttendance || 0) - (attendanceData.lessCasualAttendance || 0) - (attendanceData.lessRiAttendance || 0),
+    perDayDietAmount: totalDaysInMonth > 0 ? (attendanceData.rmaPerMonth || 0) / totalDaysInMonth : 0,
+    totalRationExpenditure: calculatedNetAmountPDF,
+    messProfit: (attendanceData.recoveryFromJawans || 0) - calculatedNetAmountPDF
+  };
   
   // Title Page
   doc.setFontSize(24);
