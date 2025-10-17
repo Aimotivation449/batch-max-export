@@ -250,65 +250,49 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   
   XLSX.utils.book_append_sheet(wb, wsMain, "Inventory Table");
   
-  // Sheet 2: Summary
+  // Sheet 2: Summary - Side by Side Layout
   const summaryData: any[][] = [];
-  summaryData.push(['INVENTORY SUMMARY REPORT']);
+  summaryData.push(['INVENTORY SUMMARY REPORT', '', '', '']);
   summaryData.push([]);
-  summaryData.push(['Month:', monthName]);
+  summaryData.push(['Month:', monthName, '', '']);
   summaryData.push([]);
-  summaryData.push(['INVENTORY SUMMARY']);
-  summaryData.push(['Description', 'Amount (₹)']);
-  summaryData.push(['Previous Month Total', summary.prevMonthTotal.amount.toFixed(2)]);
-  summaryData.push(['Received This Month Total', summary.receivedThisMonthTotal.amount.toFixed(2)]);
-  summaryData.push(['Total Received This Month', summary.totalReceivedTotal.amount.toFixed(2)]);
-  summaryData.push(['Total Expenditure This Month', summary.totalExpenditureTotal.amount.toFixed(2)]);
-  summaryData.push(['Balance Next Month', summary.balanceNextMonthTotal.amount.toFixed(2)]);
-  summaryData.push([]);
-  summaryData.push(['ADDITIONAL SUMMARY']);
-  summaryData.push(['Description', 'Amount (₹)']);
-  summaryData.push(['Previous month Fresh Received', editableSummary.prevMonthFresh.toFixed(2)]);
-  summaryData.push(['This month Fresh purchased', editableSummary.thisMonthPurchased.toFixed(2)]);
-  summaryData.push(['Total fresh purchased', editableSummary.totalFreshPurchased.toFixed(2)]);
-  summaryData.push(['Expenditures this month', editableSummary.expendituresMonth.toFixed(2)]);
-  summaryData.push(['Balance for next month', editableSummary.balanceNextMonth.toFixed(2)]);
+  summaryData.push(['INVENTORY SUMMARY', '', 'ADDITIONAL SUMMARY', '']);
+  summaryData.push(['Description', 'Amount (₹)', 'Description', 'Amount (₹)']);
+  summaryData.push(['Previous Month Total', summary.prevMonthTotal.amount.toFixed(2), 'Previous month Fresh Received', editableSummary.prevMonthFresh.toFixed(2)]);
+  summaryData.push(['Received This Month Total', summary.receivedThisMonthTotal.amount.toFixed(2), 'This month Fresh purchased', editableSummary.thisMonthPurchased.toFixed(2)]);
+  summaryData.push(['Total Received This Month', summary.totalReceivedTotal.amount.toFixed(2), 'Total fresh purchased', editableSummary.totalFreshPurchased.toFixed(2)]);
+  summaryData.push(['Total Expenditure This Month', summary.totalExpenditureTotal.amount.toFixed(2), 'Expenditures this month', editableSummary.expendituresMonth.toFixed(2)]);
+  summaryData.push(['Balance Next Month', summary.balanceNextMonthTotal.amount.toFixed(2), 'Balance for next month', editableSummary.balanceNextMonth.toFixed(2)]);
   
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-  wsSummary['!cols'] = [{ width: 40 }, { width: 20 }];
+  wsSummary['!cols'] = [{ width: 35 }, { width: 18 }, { width: 35 }, { width: 18 }];
   XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
   
-  // Sheet 3: Ration & Attendance
+  // Sheet 3: Ration & Attendance - Side by Side Layout
   const rationSheetData: any[][] = [];
-  rationSheetData.push(['RATION CONSUMPTION & ATTENDANCE REPORT']);
+  rationSheetData.push(['RATION CONSUMPTION & ATTENDANCE REPORT', '', '', '']);
   rationSheetData.push([]);
-  rationSheetData.push(['Month:', monthName]);
+  rationSheetData.push(['Month:', monthName, '', '']);
   rationSheetData.push([]);
-  rationSheetData.push(['RATION CONSUMPTION CALCULATION']);
-  rationSheetData.push(['Description', 'Amount (₹)']);
-  rationSheetData.push(['DRY RATION CONSUMED', summary.totalExpenditureTotal.amount.toFixed(2)]);
-  rationSheetData.push(['FRESH RATION CONSUMED', editableSummary.expendituresMonth.toFixed(2)]);
+  rationSheetData.push(['RATION CONSUMPTION CALCULATION', '', 'ATTENDANCE & DIET CALCULATION', '']);
+  rationSheetData.push(['Description', 'Amount (₹)', 'Description', 'Value']);
+  
   const totalRation = summary.totalExpenditureTotal.amount + editableSummary.expendituresMonth;
-  rationSheetData.push(['TOTAL RATION CONSUMED', totalRation.toFixed(2)]);
-  rationSheetData.push(['LESS CASUAL DIET AMOUNT', rationData.casualDiet.toFixed(2)]);
-  rationSheetData.push(['LESS RI PERSON AMOUNT', rationData.riPerson.toFixed(2)]);
-  rationSheetData.push(['LESS BARA KHANA AMOUNT', rationData.baraKhana.toFixed(2)]);
   const netAmount = totalRation - rationData.casualDiet - rationData.riPerson - rationData.baraKhana;
-  rationSheetData.push(['NET AMOUNT', netAmount.toFixed(2)]);
-  rationSheetData.push([]);
-  rationSheetData.push(['ATTENDANCE & DIET CALCULATION']);
-  rationSheetData.push(['Description', 'Value']);
-  rationSheetData.push(['Total attendance', attendanceData.totalAttendance]);
-  rationSheetData.push(['LESS CASUAL ATTENDENCE', attendanceData.lessCasualAttendance]);
-  rationSheetData.push(['LESS RI ATTENDENCE', attendanceData.lessRiAttendance]);
-  rationSheetData.push(['NET ATTENDENCE', attendanceData.netAttendance]);
-  rationSheetData.push(['TOTAL DAYS IN THIS MONTH', attendanceData.totalDaysMonth]);
-  rationSheetData.push(['RMA PER MONTH (₹)', attendanceData.rmaPerMonth.toFixed(2)]);
-  rationSheetData.push(['PER DAY DIET-AMOUNT (₹)', attendanceData.perDayDietAmount.toFixed(2)]);
-  rationSheetData.push(['RECOVERY FROM JAWAN\'S (₹)', attendanceData.recoveryFromJawans.toFixed(2)]);
-  rationSheetData.push(['TOTAL RATION EXPENDITURED/MONTH (₹)', attendanceData.totalRationExpenditure.toFixed(2)]);
-  rationSheetData.push(['MESS PROFIT (₹)', attendanceData.messProfit.toFixed(2)]);
+  
+  rationSheetData.push(['DRY RATION CONSUMED', summary.totalExpenditureTotal.amount.toFixed(2), 'Total attendance', attendanceData.totalAttendance]);
+  rationSheetData.push(['FRESH RATION CONSUMED', editableSummary.expendituresMonth.toFixed(2), 'LESS CASUAL ATTENDENCE', attendanceData.lessCasualAttendance]);
+  rationSheetData.push(['TOTAL RATION CONSUMED', totalRation.toFixed(2), 'LESS RI ATTENDENCE', attendanceData.lessRiAttendance]);
+  rationSheetData.push(['LESS CASUAL DIET AMOUNT', rationData.casualDiet.toFixed(2), 'NET ATTENDENCE', attendanceData.netAttendance]);
+  rationSheetData.push(['LESS RI PERSON AMOUNT', rationData.riPerson.toFixed(2), 'TOTAL DAYS IN THIS MONTH', attendanceData.totalDaysMonth]);
+  rationSheetData.push(['LESS BARA KHANA AMOUNT', rationData.baraKhana.toFixed(2), 'RMA PER MONTH (₹)', attendanceData.rmaPerMonth.toFixed(2)]);
+  rationSheetData.push(['NET AMOUNT', netAmount.toFixed(2), 'PER DAY DIET-AMOUNT (₹)', attendanceData.perDayDietAmount.toFixed(2)]);
+  rationSheetData.push(['', '', 'RECOVERY FROM JAWAN\'S (₹)', attendanceData.recoveryFromJawans.toFixed(2)]);
+  rationSheetData.push(['', '', 'TOTAL RATION EXPENDITURED/MONTH (₹)', attendanceData.totalRationExpenditure.toFixed(2)]);
+  rationSheetData.push(['', '', 'MESS PROFIT (₹)', attendanceData.messProfit.toFixed(2)]);
   
   const wsRation = XLSX.utils.aoa_to_sheet(rationSheetData);
-  wsRation['!cols'] = [{ width: 40 }, { width: 20 }];
+  wsRation['!cols'] = [{ width: 35 }, { width: 18 }, { width: 40 }, { width: 20 }];
   XLSX.utils.book_append_sheet(wb, wsRation, "Ration & Attendance");
   
   XLSX.writeFile(wb, `FIFO_Inventory_${monthName.replace(/\s+/g, '_')}.xlsx`);
@@ -451,15 +435,14 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
     }
   } as any);
   
-  // Summary Page - All sections side by side
+  // Summary Page - Two columns side by side
   doc.addPage();
   doc.setFontSize(18);
   doc.text('SUMMARY REPORT', doc.internal.pageSize.width / 2, 15, { align: 'center' });
   
   const pageWidth = doc.internal.pageSize.width;
   const col1X = 15;
-  const col2X = pageWidth / 3 + 5;
-  const col3X = (pageWidth * 2) / 3 - 5;
+  const col2X = pageWidth / 2 + 5;
   const startY = 25;
   
   // Column 1: INVENTORY SUMMARY
@@ -467,7 +450,7 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
   doc.text('INVENTORY SUMMARY', col1X, startY);
   autoTable(doc, {
     startY: startY + 3,
-    margin: { left: col1X, right: pageWidth - col2X + 10 },
+    margin: { left: col1X, right: pageWidth / 2 + 10 },
     head: [['Description', 'Amount (₹)']],
     body: [
       ['Previous Month Total', summary.prevMonthTotal.amount.toFixed(2)],
@@ -477,7 +460,7 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
       ['Balance Next Month', summary.balanceNextMonthTotal.amount.toFixed(2)]
     ],
     theme: 'striped',
-    styles: { fontSize: 8, cellPadding: 2 },
+    styles: { fontSize: 9, cellPadding: 2 },
     headStyles: { fillColor: [102, 126, 234] }
   });
   
@@ -486,7 +469,7 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
   doc.text('ADDITIONAL SUMMARY', col2X, startY);
   autoTable(doc, {
     startY: startY + 3,
-    margin: { left: col2X, right: pageWidth - col3X + 10 },
+    margin: { left: col2X },
     head: [['Description', 'Amount (₹)']],
     body: [
       ['Prev Month Fresh', editableSummary.prevMonthFresh.toFixed(2)],
@@ -496,19 +479,22 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
       ['Balance Next Month', editableSummary.balanceNextMonth.toFixed(2)]
     ],
     theme: 'striped',
-    styles: { fontSize: 8, cellPadding: 2 },
+    styles: { fontSize: 9, cellPadding: 2 },
     headStyles: { fillColor: [102, 126, 234] }
   });
   
-  // Column 3: RATION CONSUMPTION
+  // Second row - RATION CONSUMPTION & ATTENDANCE side by side
+  const firstRowY = Math.max((doc as any).lastAutoTable.finalY || startY + 50) + 15;
+  
+  // Column 1: RATION CONSUMPTION
   const totalRation = summary.totalExpenditureTotal.amount + editableSummary.expendituresMonth;
   const netAmount = totalRation - rationData.casualDiet - rationData.riPerson - rationData.baraKhana;
   
   doc.setFontSize(12);
-  doc.text('RATION CONSUMPTION', col3X, startY);
+  doc.text('RATION CONSUMPTION', col1X, firstRowY);
   autoTable(doc, {
-    startY: startY + 3,
-    margin: { left: col3X },
+    startY: firstRowY + 3,
+    margin: { left: col1X, right: pageWidth / 2 + 10 },
     head: [['Description', 'Amount (₹)']],
     body: [
       ['DRY RATION', summary.totalExpenditureTotal.amount.toFixed(2)],
@@ -520,21 +506,16 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
       ['NET AMOUNT', netAmount.toFixed(2)]
     ],
     theme: 'striped',
-    styles: { fontSize: 8, cellPadding: 2 },
+    styles: { fontSize: 9, cellPadding: 2 },
     headStyles: { fillColor: [102, 126, 234] }
   });
   
-  // ATTENDANCE & DIET below (full width)
-  const lastY = Math.max(
-    (doc as any).lastAutoTable.finalY || startY + 50,
-    startY + 80
-  ) + 15;
-  
-  doc.setFontSize(14);
-  doc.text('ATTENDANCE & DIET CALCULATION', pageWidth / 2, lastY, { align: 'center' });
-  
+  // Column 2: ATTENDANCE & DIET CALCULATION
+  doc.setFontSize(12);
+  doc.text('ATTENDANCE & DIET CALCULATION', col2X, firstRowY);
   autoTable(doc, {
-    startY: lastY + 5,
+    startY: firstRowY + 3,
+    margin: { left: col2X },
     head: [['Description', 'Value']],
     body: [
       ['Total attendance', attendanceData.totalAttendance.toString()],
@@ -549,7 +530,7 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
       ['MESS PROFIT (₹)', attendanceData.messProfit.toFixed(2)]
     ],
     theme: 'striped',
-    styles: { fontSize: 9 },
+    styles: { fontSize: 9, cellPadding: 2 },
     headStyles: { fillColor: [102, 126, 234] }
   });
   
