@@ -232,11 +232,11 @@ const Index = () => {
           </div>
         )}
 
-        {/* Summary Section */}
-        <SummarySection summary={summary} />
-
-        {/* Ration & Attendance Section */}
-        <RationSection summary={summary} />
+        {/* Summary Sections - Side by Side */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <SummarySection summary={summary} />
+          <RationSection summary={summary} />
+        </div>
       </div>
     </div>
   );
