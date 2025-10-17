@@ -317,7 +317,14 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                       <SelectContent>
                         <SelectItem value="KG">KG</SelectItem>
                         <SelectItem value="L">L</SelectItem>
+                        <SelectItem value="Ltr">Ltr</SelectItem>
                         <SelectItem value="PCS">PCS</SelectItem>
+                        <SelectItem value="Pkt">Pkt</SelectItem>
+                        <SelectItem value="Bag">Bag</SelectItem>
+                        <SelectItem value="Btl">Btl</SelectItem>
+                        <SelectItem value="Tin">Tin</SelectItem>
+                        <SelectItem value="Grms">Grms</SelectItem>
+                        <SelectItem value="Nos">Nos</SelectItem>
                         <SelectItem value="M">M</SelectItem>
                         <SelectItem value="Unit">Unit</SelectItem>
                       </SelectContent>
