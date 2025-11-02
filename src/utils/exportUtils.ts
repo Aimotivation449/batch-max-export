@@ -68,27 +68,27 @@ export function createBatchRows(item: InventoryItem, slNo: number): BatchRow[] {
       itemName: i === 0 ? item.name : '',
       unit: i === 0 ? item.unit : '',
       prevMonth: {
-        qty: prevBatch ? prevBatch.qty.toFixed(2) : '',
+        qty: prevBatch ? Math.floor(prevBatch.qty).toString() : '',
         rate: prevBatch ? prevBatch.rate.toFixed(2) : '',
         amount: prevBatch ? (prevBatch.qty * prevBatch.rate).toFixed(2) : ''
       },
       receivedThisMonth: {
-        qty: receivedBatch ? receivedBatch.qty.toFixed(2) : '',
+        qty: receivedBatch ? Math.floor(receivedBatch.qty).toString() : '',
         rate: receivedBatch ? receivedBatch.rate.toFixed(2) : '',
         amount: receivedBatch ? (receivedBatch.qty * receivedBatch.rate).toFixed(2) : ''
       },
       totalReceived: {
-        qty: totalReceivedBatch ? totalReceivedBatch.qty.toFixed(2) : '',
+        qty: totalReceivedBatch ? Math.floor(totalReceivedBatch.qty).toString() : '',
         rate: totalReceivedBatch ? totalReceivedBatch.rate.toFixed(2) : '',
         amount: totalReceivedBatch ? (totalReceivedBatch.qty * totalReceivedBatch.rate).toFixed(2) : ''
       },
       expenditure: {
-        qty: expenditureBatch ? expenditureBatch.qty.toFixed(2) : '',
+        qty: expenditureBatch ? Math.floor(expenditureBatch.qty).toString() : '',
         rate: expenditureBatch ? expenditureBatch.rate.toFixed(2) : '',
         amount: expenditureBatch ? (expenditureBatch.qty * expenditureBatch.rate).toFixed(2) : ''
       },
       balance: {
-        qty: balanceBatch ? balanceBatch.qty.toFixed(2) : '',
+        qty: balanceBatch ? Math.floor(balanceBatch.qty).toString() : '',
         rate: balanceBatch ? balanceBatch.rate.toFixed(2) : '',
         amount: balanceBatch ? (balanceBatch.qty * balanceBatch.rate).toFixed(2) : ''
       }
@@ -231,11 +231,11 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   mainData.push([]);
   mainData.push([
     'GRAND TOTALS', '', '',
-    summary.prevMonthTotal.qty.toFixed(2), '', summary.prevMonthTotal.amount.toFixed(2),
-    summary.receivedThisMonthTotal.qty.toFixed(2), '', summary.receivedThisMonthTotal.amount.toFixed(2),
-    summary.totalReceivedTotal.qty.toFixed(2), '', summary.totalReceivedTotal.amount.toFixed(2),
-    summary.totalExpenditureTotal.qty.toFixed(2), '', summary.totalExpenditureTotal.amount.toFixed(2),
-    summary.balanceNextMonthTotal.qty.toFixed(2), '', summary.balanceNextMonthTotal.amount.toFixed(2)
+    Math.floor(summary.prevMonthTotal.qty), '', summary.prevMonthTotal.amount.toFixed(2),
+    Math.floor(summary.receivedThisMonthTotal.qty), '', summary.receivedThisMonthTotal.amount.toFixed(2),
+    Math.floor(summary.totalReceivedTotal.qty), '', summary.totalReceivedTotal.amount.toFixed(2),
+    Math.floor(summary.totalExpenditureTotal.qty), '', summary.totalExpenditureTotal.amount.toFixed(2),
+    Math.floor(summary.balanceNextMonthTotal.qty), '', summary.balanceNextMonthTotal.amount.toFixed(2)
   ]);
   
   const wsMain = XLSX.utils.aoa_to_sheet(mainData);

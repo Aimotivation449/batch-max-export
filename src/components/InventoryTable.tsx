@@ -177,7 +177,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
           let value = '';
           switch (type) {
             case 'qty':
-              value = `${batch.qty.toFixed(2)} ${unit}`;
+              value = `${Math.floor(batch.qty)} ${unit}`;
               break;
             case 'rate':
               value = `₹${batch.rate.toFixed(2)}`;
@@ -189,7 +189,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
 
           return (
             <div key={batch.id} className="flex items-center justify-between gap-1 text-xs">
-              <span>{value}</span>
+              <span className="text-right flex-1">{value}</span>
               {type === 'amount' && itemId && section && (
                 <div className="flex gap-1">
                   <Button
@@ -333,7 +333,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                   
                   {/* Previous Month */}
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
-                    <div className="font-semibold text-sm">{prevSummary.qty.toFixed(2)} {item.unit}</div>
+                    <div className="font-semibold text-sm text-right">{Math.floor(prevSummary.qty)} {item.unit}</div>
                     {renderBatches(item.prevMonth.batches, 'qty', item.unit)}
                     <Input
                       type="number"
@@ -348,7 +348,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                     />
                   </td>
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
-                    <div className="font-semibold text-sm">₹{prevSummary.rate.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{prevSummary.rate.toFixed(2)}</div>
                     {renderBatches(item.prevMonth.batches, 'rate')}
                     <Input
                       type="number"
@@ -363,7 +363,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                     />
                   </td>
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
-                    <div className="font-semibold text-sm">₹{prevSummary.amount.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{prevSummary.amount.toFixed(2)}</div>
                     {renderBatches(item.prevMonth.batches, 'amount', '', item.id, 'prevMonth')}
                     <Button
                       size="sm"
@@ -377,7 +377,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
 
                   {/* Received This Month */}
                   <td className="border border-border/50 p-2 bg-blue-50/50 dark:bg-blue-950/20">
-                    <div className="font-semibold text-sm">{recSummary.qty.toFixed(2)} {item.unit}</div>
+                    <div className="font-semibold text-sm text-right">{Math.floor(recSummary.qty)} {item.unit}</div>
                     {renderBatches(item.receivedThisMonth.batches, 'qty', item.unit)}
                     <Input
                       type="number"
@@ -392,7 +392,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                     />
                   </td>
                   <td className="border border-border/50 p-2 bg-blue-50/50 dark:bg-blue-950/20">
-                    <div className="font-semibold text-sm">₹{recSummary.rate.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{recSummary.rate.toFixed(2)}</div>
                     {renderBatches(item.receivedThisMonth.batches, 'rate')}
                     <Input
                       type="number"
@@ -407,7 +407,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                     />
                   </td>
                   <td className="border border-border/50 p-2 bg-blue-50/50 dark:bg-blue-950/20">
-                    <div className="font-semibold text-sm">₹{recSummary.amount.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{recSummary.amount.toFixed(2)}</div>
                     {renderBatches(item.receivedThisMonth.batches, 'amount', '', item.id, 'receivedThisMonth')}
                     <Button
                       size="sm"
@@ -421,18 +421,18 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
 
                   {/* Total Received */}
                   <td className="border border-border/50 p-2 bg-purple-50/50 dark:bg-purple-950/20">
-                    <div className="font-semibold text-sm">{totalReceived.qty.toFixed(2)} {item.unit}</div>
+                    <div className="font-semibold text-sm text-right">{Math.floor(totalReceived.qty)} {item.unit}</div>
                   </td>
                   <td className="border border-border/50 p-2 bg-purple-50/50 dark:bg-purple-950/20">
-                    <div className="font-semibold text-sm">₹{totalReceived.rate.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{totalReceived.rate.toFixed(2)}</div>
                   </td>
                   <td className="border border-border/50 p-2 bg-purple-50/50 dark:bg-purple-950/20">
-                    <div className="font-semibold text-sm">₹{totalReceived.amount.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{totalReceived.amount.toFixed(2)}</div>
                   </td>
 
                   {/* Expenditure */}
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
-                    <div className="font-semibold text-sm">{item.expenditureThisMonth.qty.toFixed(2)} {item.unit}</div>
+                    <div className="font-semibold text-sm text-right">{Math.floor(item.expenditureThisMonth.qty)} {item.unit}</div>
                     <Input
                       type="number"
                       placeholder="Enter Qty"
@@ -443,21 +443,21 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                     />
                   </td>
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
-                    <div className="font-semibold text-sm">₹{expenditureData.rate.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{expenditureData.rate.toFixed(2)}</div>
                   </td>
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
-                    <div className="font-semibold text-sm">₹{expenditureData.amount.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{expenditureData.amount.toFixed(2)}</div>
                   </td>
 
                   {/* Balance */}
                   <td className="border border-border/50 p-2 bg-green-50/50 dark:bg-green-950/20">
-                    <div className="font-semibold text-sm">{balanceData.qty.toFixed(2)} {item.unit}</div>
+                    <div className="font-semibold text-sm text-right">{Math.floor(balanceData.qty)} {item.unit}</div>
                   </td>
                   <td className="border border-border/50 p-2 bg-green-50/50 dark:bg-green-950/20">
-                    <div className="font-semibold text-sm">₹{balanceData.rate.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{balanceData.rate.toFixed(2)}</div>
                   </td>
                   <td className="border border-border/50 p-2 bg-green-50/50 dark:bg-green-950/20">
-                    <div className="font-semibold text-sm">₹{balanceData.amount.toFixed(2)}</div>
+                    <div className="font-semibold text-sm text-right">₹{balanceData.amount.toFixed(2)}</div>
                   </td>
 
                   <td className="border border-border/50 p-2 text-center">
@@ -476,21 +476,21 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
           <tfoot>
             <tr className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold">
               <td colSpan={3} className="border border-border/50 p-3 text-center text-sm">GRAND TOTALS</td>
-              <td className="border border-border/50 p-3 text-sm">{summary.prevMonthTotal.qty.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">{Math.floor(summary.prevMonthTotal.qty)}</td>
               <td className="border border-border/50 p-3"></td>
-              <td className="border border-border/50 p-3 text-sm">₹{summary.prevMonthTotal.amount.toFixed(2)}</td>
-              <td className="border border-border/50 p-3 text-sm">{summary.receivedThisMonthTotal.qty.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">₹{summary.prevMonthTotal.amount.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">{Math.floor(summary.receivedThisMonthTotal.qty)}</td>
               <td className="border border-border/50 p-3"></td>
-              <td className="border border-border/50 p-3 text-sm">₹{summary.receivedThisMonthTotal.amount.toFixed(2)}</td>
-              <td className="border border-border/50 p-3 text-sm">{summary.totalReceivedTotal.qty.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">₹{summary.receivedThisMonthTotal.amount.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">{Math.floor(summary.totalReceivedTotal.qty)}</td>
               <td className="border border-border/50 p-3"></td>
-              <td className="border border-border/50 p-3 text-sm">₹{summary.totalReceivedTotal.amount.toFixed(2)}</td>
-              <td className="border border-border/50 p-3 text-sm">{summary.totalExpenditureTotal.qty.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">₹{summary.totalReceivedTotal.amount.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">{Math.floor(summary.totalExpenditureTotal.qty)}</td>
               <td className="border border-border/50 p-3"></td>
-              <td className="border border-border/50 p-3 text-sm">₹{summary.totalExpenditureTotal.amount.toFixed(2)}</td>
-              <td className="border border-border/50 p-3 text-sm">{summary.balanceNextMonthTotal.qty.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">₹{summary.totalExpenditureTotal.amount.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">{Math.floor(summary.balanceNextMonthTotal.qty)}</td>
               <td className="border border-border/50 p-3"></td>
-              <td className="border border-border/50 p-3 text-sm">₹{summary.balanceNextMonthTotal.amount.toFixed(2)}</td>
+              <td className="border border-border/50 p-3 text-sm text-right">₹{summary.balanceNextMonthTotal.amount.toFixed(2)}</td>
               <td className="border border-border/50 p-3"></td>
             </tr>
           </tfoot>
