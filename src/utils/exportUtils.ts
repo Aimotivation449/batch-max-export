@@ -195,11 +195,9 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   ]);
   
   const startRow = mainData.length; // Track row numbers for styling
-  const mergeCells: any[] = []; // Track cells to merge
   
   items.forEach((item, index) => {
     const batchRows = createBatchRows(item, index + 1);
-    const itemStartRow = mainData.length;
     
     batchRows.forEach((row) => {
       mainData.push([
@@ -223,25 +221,6 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
         row.balance.amount
       ]);
     });
-    
-    // If item has multiple batch rows, merge Sl No and Item Name cells
-    if (batchRows.length > 1) {
-      // Merge Sl No (column A)
-      mergeCells.push({
-        s: { r: itemStartRow, c: 0 },
-        e: { r: itemStartRow + batchRows.length - 1, c: 0 }
-      });
-      // Merge Item Name (column B)
-      mergeCells.push({
-        s: { r: itemStartRow, c: 1 },
-        e: { r: itemStartRow + batchRows.length - 1, c: 1 }
-      });
-      // Merge Unit (column C)
-      mergeCells.push({
-        s: { r: itemStartRow, c: 2 },
-        e: { r: itemStartRow + batchRows.length - 1, c: 2 }
-      });
-    }
     
     // Add separator row after each item (except last)
     if (index < items.length - 1) {
@@ -268,9 +247,6 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
     { width: 10 }, { width: 10 }, { width: 12 },
     { width: 10 }, { width: 10 }, { width: 12 }
   ];
-  
-  // Apply cell merges
-  wsMain['!merges'] = mergeCells;
   
   // Apply right alignment to all numeric columns (qty, rate, amount columns)
   const range = XLSX.utils.decode_range(wsMain['!ref'] || 'A1');
@@ -421,9 +397,9 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
     
     batchRows.forEach((row, batchIndex) => {
       tableData.push([
-        batchIndex === 0 ? { content: (itemIndex + 1).toString(), rowSpan: batchRows.length } : '',
-        batchIndex === 0 ? { content: item.name, rowSpan: batchRows.length } : '',
-        batchIndex === 0 ? { content: item.unit, rowSpan: batchRows.length } : '',
+        batchIndex === 0 ? (itemIndex + 1).toString() : '',
+        batchIndex === 0 ? item.name : '',
+        batchIndex === 0 ? item.unit : '',
         row.prevMonth.qty,
         row.prevMonth.rate,
         row.prevMonth.amount,
