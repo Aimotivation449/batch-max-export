@@ -248,6 +248,20 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
     { width: 10 }, { width: 10 }, { width: 12 }
   ];
   
+  // Apply right alignment to all numeric columns (qty, rate, amount columns)
+  const range = XLSX.utils.decode_range(wsMain['!ref'] || 'A1');
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      // Align columns 3-17 (D-R: all qty, rate, amount columns) to the right
+      if (C >= 3 && C <= 17) {
+        const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!wsMain[cell_address]) continue;
+        if (!wsMain[cell_address].s) wsMain[cell_address].s = {};
+        wsMain[cell_address].s.alignment = { horizontal: 'right' };
+      }
+    }
+  }
+  
   XLSX.utils.book_append_sheet(wb, wsMain, "Inventory Table");
   
   // Sheet 2: Summary - Side by Side Layout
@@ -266,6 +280,20 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
   wsSummary['!cols'] = [{ width: 35 }, { width: 18 }, { width: 35 }, { width: 18 }];
+  
+  // Apply right alignment to amount columns (columns B and D)
+  const summaryRange = XLSX.utils.decode_range(wsSummary['!ref'] || 'A1');
+  for (let R = summaryRange.s.r; R <= summaryRange.e.r; ++R) {
+    for (let C = summaryRange.s.c; C <= summaryRange.e.c; ++C) {
+      if (C === 1 || C === 3) { // Columns B and D (amount columns)
+        const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!wsSummary[cell_address]) continue;
+        if (!wsSummary[cell_address].s) wsSummary[cell_address].s = {};
+        wsSummary[cell_address].s.alignment = { horizontal: 'right' };
+      }
+    }
+  }
+  
   XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
   
   // Sheet 3: Ration & Attendance - Side by Side Layout
@@ -293,6 +321,20 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   
   const wsRation = XLSX.utils.aoa_to_sheet(rationSheetData);
   wsRation['!cols'] = [{ width: 35 }, { width: 18 }, { width: 40 }, { width: 20 }];
+  
+  // Apply right alignment to amount/value columns (columns B and D)
+  const rationRange = XLSX.utils.decode_range(wsRation['!ref'] || 'A1');
+  for (let R = rationRange.s.r; R <= rationRange.e.r; ++R) {
+    for (let C = rationRange.s.c; C <= rationRange.e.c; ++C) {
+      if (C === 1 || C === 3) { // Columns B and D (amount/value columns)
+        const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!wsRation[cell_address]) continue;
+        if (!wsRation[cell_address].s) wsRation[cell_address].s = {};
+        wsRation[cell_address].s.alignment = { horizontal: 'right' };
+      }
+    }
+  }
+  
   XLSX.utils.book_append_sheet(wb, wsRation, "Ration & Attendance");
   
   XLSX.writeFile(wb, `FIFO_Inventory_${monthName.replace(/\s+/g, '_')}.xlsx`);
@@ -383,11 +425,11 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
   
   tableData.push([
     { content: 'GRAND TOTALS', colSpan: 3 },
-    summary.prevMonthTotal.qty.toFixed(2), '', summary.prevMonthTotal.amount.toFixed(2),
-    summary.receivedThisMonthTotal.qty.toFixed(2), '', summary.receivedThisMonthTotal.amount.toFixed(2),
-    summary.totalReceivedTotal.qty.toFixed(2), '', summary.totalReceivedTotal.amount.toFixed(2),
-    summary.totalExpenditureTotal.qty.toFixed(2), '', summary.totalExpenditureTotal.amount.toFixed(2),
-    summary.balanceNextMonthTotal.qty.toFixed(2), '', summary.balanceNextMonthTotal.amount.toFixed(2)
+    Math.floor(summary.prevMonthTotal.qty), '', summary.prevMonthTotal.amount.toFixed(2),
+    Math.floor(summary.receivedThisMonthTotal.qty), '', summary.receivedThisMonthTotal.amount.toFixed(2),
+    Math.floor(summary.totalReceivedTotal.qty), '', summary.totalReceivedTotal.amount.toFixed(2),
+    Math.floor(summary.totalExpenditureTotal.qty), '', summary.totalExpenditureTotal.amount.toFixed(2),
+    Math.floor(summary.balanceNextMonthTotal.qty), '', summary.balanceNextMonthTotal.amount.toFixed(2)
   ]);
   
   autoTable(doc, {
@@ -417,7 +459,22 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
     columnStyles: {
       0: { halign: 'center', valign: 'middle' },
       1: { halign: 'left', valign: 'middle' },
-      2: { halign: 'center', valign: 'middle' }
+      2: { halign: 'center', valign: 'middle' },
+      3: { halign: 'right', valign: 'middle' },  // Qty columns
+      4: { halign: 'right', valign: 'middle' },  // Rate columns
+      5: { halign: 'right', valign: 'middle' },  // Amount columns
+      6: { halign: 'right', valign: 'middle' },
+      7: { halign: 'right', valign: 'middle' },
+      8: { halign: 'right', valign: 'middle' },
+      9: { halign: 'right', valign: 'middle' },
+      10: { halign: 'right', valign: 'middle' },
+      11: { halign: 'right', valign: 'middle' },
+      12: { halign: 'right', valign: 'middle' },
+      13: { halign: 'right', valign: 'middle' },
+      14: { halign: 'right', valign: 'middle' },
+      15: { halign: 'right', valign: 'middle' },
+      16: { halign: 'right', valign: 'middle' },
+      17: { halign: 'right', valign: 'middle' }
     },
     didDrawCell: function(data: any) {
       // Add thicker bottom border for item end rows
