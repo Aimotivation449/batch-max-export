@@ -4,28 +4,29 @@ import { Calculator, Users } from 'lucide-react';
 
 interface RationSectionProps {
   summary: SummaryData;
+  rationData: {
+    freshRation: number;
+    casualDiet: number;
+    riPerson: number;
+    baraKhana: number;
+  };
+  setRationData: (data: any) => void;
+  attendanceData: {
+    totalAttendance: number;
+    lessCasualAttendance: number;
+    lessRiAttendance: number;
+    netAttendance: number;
+    totalDaysMonth: number;
+    rmaPerMonth: number;
+    perDayDietAmount: number;
+    recoveryFromJawans: number;
+    totalRationExpenditure: number;
+    messProfit: number;
+  };
+  setAttendanceData: (data: any) => void;
 }
 
-export function RationSection({ summary }: RationSectionProps) {
-  const [rationData, setRationData] = useState({
-    freshRation: 0,
-    casualDiet: 0,
-    riPerson: 0,
-    baraKhana: 0
-  });
-
-  const [attendanceData, setAttendanceData] = useState({
-    totalAttendance: 450,
-    lessCasualAttendance: 0,
-    lessRiAttendance: 0,
-    netAttendance: 450,
-    totalDaysMonth: 30,
-    rmaPerMonth: 5000,
-    perDayDietAmount: 0,
-    recoveryFromJawans: 0,
-    totalRationExpenditure: 0,
-    messProfit: 0
-  });
+export function RationSection({ summary, rationData, setRationData, attendanceData, setAttendanceData }: RationSectionProps) {
 
   // Calculate dry ration consumed (from inventory expenditure)
   const dryRationConsumed = summary.totalExpenditureTotal.amount;
@@ -71,14 +72,14 @@ export function RationSection({ summary }: RationSectionProps) {
     const perDay = daysInMonth > 0 ? attendanceData.rmaPerMonth / daysInMonth : 0;
     const profit = attendanceData.recoveryFromJawans - netAmount;
 
-    setAttendanceData(prev => ({
-      ...prev,
+    setAttendanceData({
+      ...attendanceData,
       netAttendance: netAtt,
       totalDaysMonth: daysInMonth,
       perDayDietAmount: parseFloat(perDay.toFixed(2)),
       totalRationExpenditure: netAmount,
       messProfit: profit
-    }));
+    });
   }, [
     attendanceData.totalAttendance,
     attendanceData.lessCasualAttendance,

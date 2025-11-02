@@ -96,6 +96,7 @@ const Index = () => {
     balanceNextMonth: 5000
   });
   const [rationData, setRationData] = useState({
+    freshRation: 0,
     casualDiet: 0,
     riPerson: 0,
     baraKhana: 0
@@ -234,8 +235,14 @@ const Index = () => {
 
         {/* Summary Sections - Side by Side */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <SummarySection summary={summary} />
-          <RationSection summary={summary} />
+        <SummarySection summary={summary} />
+        <RationSection 
+          summary={summary} 
+          rationData={rationData}
+          setRationData={setRationData}
+          attendanceData={attendanceData}
+          setAttendanceData={setAttendanceData}
+        />
         </div>
       </div>
     </div>
