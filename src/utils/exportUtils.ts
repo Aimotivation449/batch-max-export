@@ -42,7 +42,17 @@ export function createBatchRows(item: InventoryItem, slNo: number): BatchRow[] {
   }
   
   // Total received batches (combination of prev + received)
-  const totalReceivedBatches = [...prevBatches, ...receivedBatches];
+  // Merge batches with the same rate into a single row (sum qty)
+  const combinedBatches = [...prevBatches, ...receivedBatches];
+  const totalReceivedBatches: Batch[] = [];
+  for (const batch of combinedBatches) {
+    const existing = totalReceivedBatches.find(b => b.rate === batch.rate);
+    if (existing) {
+      existing.qty += batch.qty;
+    } else {
+      totalReceivedBatches.push({ ...batch });
+    }
+  }
   
   // Find maximum number of batches across all columns
   const maxBatches = Math.max(
