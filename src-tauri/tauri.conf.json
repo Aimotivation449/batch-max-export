@@ -16,14 +16,14 @@
         "all": false,
         "open": true
       },
-      "dialog": {
-        "all": true,
-        "save": true
-      },
-      "fs": {
-        "all": true,
-        "scope": ["**"]
-      }
+        "dialog": {
+          "all": true,
+          "save": true
+        },
+        "fs": {
+          "writeFile": true,
+          "scope": ["$DOWNLOAD/**", "$DOCUMENT/**", "$DESKTOP/**"]
+        }
     },
     "bundle": {
       "active": true,
