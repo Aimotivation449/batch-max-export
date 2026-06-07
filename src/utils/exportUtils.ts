@@ -222,6 +222,26 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
       ]);
     });
     
+    // Per-item Grand Total row
+    const prevBatches = item.prevMonth.batches || [];
+    const recvBatches = item.receivedThisMonth.batches || [];
+    const prevQty = prevBatches.reduce((s, b) => s + b.qty, 0);
+    const prevAmt = prevBatches.reduce((s, b) => s + b.qty * b.rate, 0);
+    const recvQty = recvBatches.reduce((s, b) => s + b.qty, 0);
+    const recvAmt = recvBatches.reduce((s, b) => s + b.qty * b.rate, 0);
+    const totRecv = calculateTotalReceived(item);
+    const expData = calculateExpenditureBatches(item);
+    const balData = calculateBalanceNextMonth(item);
+    
+    mainData.push([
+      '', 'Grand Total', '',
+      Math.floor(prevQty), '', prevAmt.toFixed(2),
+      Math.floor(recvQty), '', recvAmt.toFixed(2),
+      Math.floor(totRecv.qty), '', totRecv.amount.toFixed(2),
+      Math.floor(item.expenditureThisMonth.qty), '', expData.amount.toFixed(2),
+      Math.floor(balData.qty), '', balData.amount.toFixed(2)
+    ]);
+    
     // Add separator row after each item (except last)
     if (index < items.length - 1) {
       mainData.push(['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
