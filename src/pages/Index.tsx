@@ -161,20 +161,14 @@ const Index = () => {
     <div className="min-h-screen p-4 md:p-6">
       <div className="max-width mx-auto space-y-6">
         {/* Header */}
-        <header className="mb-8 grid grid-cols-[3.5rem_minmax(0,1fr)_3.5rem] items-center gap-3 sm:grid-cols-[4rem_minmax(0,1fr)_4rem] sm:gap-5">
-          <img
-            src="./bsf-insignia.svg"
-            alt="Border Security Force emblem"
-            className="h-14 w-14 justify-self-center object-contain sm:h-16 sm:w-16"
-          />
-          <h1 className="text-center text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
-            BSF Mess Summary Software
-          </h1>
-          <img
-            src="./bsf-insignia.svg"
-            alt="Border Security Force emblem"
-            className="h-14 w-14 justify-self-center object-contain sm:h-16 sm:w-16"
-          />
+        <header className="bsf-masthead mb-8 rounded-md shadow-lg px-3 py-4 sm:px-6 grid grid-cols-[3.5rem_minmax(0,1fr)_3.5rem] items-center gap-3 sm:grid-cols-[5rem_minmax(0,1fr)_5rem] sm:gap-5">
+          <img src="./bsf-insignia.svg" alt="Border Security Force emblem" className="h-14 w-14 justify-self-center object-contain sm:h-20 sm:w-20 drop-shadow" />
+          <div className="text-center text-primary-foreground">
+            <p className="text-xs sm:text-sm font-semibold tracking-[0.25em] text-accent">सीमा सुरक्षा बल • BORDER SECURITY FORCE</p>
+            <h1 className="mt-1 text-2xl font-bold uppercase tracking-wide sm:text-3xl md:text-4xl">BSF Mess Summary Software</h1>
+            <p className="mt-1 text-xs sm:text-sm italic text-accent">जीवन पर्यन्त कर्तव्य — Duty Unto Death</p>
+          </div>
+          <img src="./bsf-insignia.svg" alt="Border Security Force emblem" className="h-14 w-14 justify-self-center object-contain sm:h-20 sm:w-20 drop-shadow" />
         </header>
 
         {/* Controls */}
