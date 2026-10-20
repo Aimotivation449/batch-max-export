@@ -48,7 +48,7 @@ export function SummarySection({ summary }: SummarySectionProps) {
         </h3>
         
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3 p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border-l-4 border-red-500">
+          <div className="grid grid-cols-2 gap-3 p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
             <span className="font-semibold">Previous Month Total:</span>
             <div className="text-right">
               <div className="font-bold">₹{summary.prevMonthTotal.amount.toFixed(2)}</div>
@@ -56,7 +56,7 @@ export function SummarySection({ summary }: SummarySectionProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-l-4 border-blue-500">
+          <div className="grid grid-cols-2 gap-3 p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
             <span className="font-semibold">Received This Month Total:</span>
             <div className="text-right">
               <div className="font-bold">₹{summary.receivedThisMonthTotal.amount.toFixed(2)}</div>
@@ -64,7 +64,7 @@ export function SummarySection({ summary }: SummarySectionProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border-l-4 border-purple-500">
+          <div className="grid grid-cols-2 gap-3 p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
             <span className="font-semibold">Total Received This Month:</span>
             <div className="text-right">
               <div className="font-bold">₹{summary.totalReceivedTotal.amount.toFixed(2)}</div>
@@ -72,7 +72,7 @@ export function SummarySection({ summary }: SummarySectionProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg border-l-4 border-orange-500">
+          <div className="grid grid-cols-2 gap-3 p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
             <span className="font-semibold">Total Expenditure This Month:</span>
             <div className="text-right">
               <div className="font-bold">₹{summary.totalExpenditureTotal.amount.toFixed(2)}</div>
@@ -80,7 +80,7 @@ export function SummarySection({ summary }: SummarySectionProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border-l-4 border-green-500">
+          <div className="grid grid-cols-2 gap-3 p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
             <span className="font-semibold">Balance Next Month:</span>
             <div className="text-right">
               <div className="font-bold">₹{summary.balanceNextMonthTotal.amount.toFixed(2)}</div>
