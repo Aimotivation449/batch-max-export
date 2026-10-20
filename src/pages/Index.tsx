@@ -161,20 +161,20 @@ const Index = () => {
     <div className="min-h-screen p-4 md:p-6">
       <div className="max-width mx-auto space-y-6">
         {/* Header */}
-        <header className="text-center mb-8">
-          <div className="inline-flex items-center gap-4 glass-panel px-8 md:px-12 py-6 rounded-3xl">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full gradient-primary flex items-center justify-center shadow-lg animate-float">
-              <Package className="w-8 h-8 md:w-10 md:h-10 text-white" />
-            </div>
-            <div className="text-left">
-              <h1 className="text-2xl md:text-4xl font-bold gradient-primary bg-clip-text text-transparent">
-                Advanced FIFO Inventory
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground">
-                Professional Inventory Management with Enhanced Reporting
-              </p>
-            </div>
-          </div>
+        <header className="mb-8 grid grid-cols-[3.5rem_minmax(0,1fr)_3.5rem] items-center gap-3 sm:grid-cols-[4rem_minmax(0,1fr)_4rem] sm:gap-5">
+          <img
+            src="./bsf-insignia.svg"
+            alt="Border Security Force emblem"
+            className="h-14 w-14 justify-self-center object-contain sm:h-16 sm:w-16"
+          />
+          <h1 className="text-center text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
+            BSF Mess Summary Software
+          </h1>
+          <img
+            src="./bsf-insignia.svg"
+            alt="Border Security Force emblem"
+            className="h-14 w-14 justify-self-center object-contain sm:h-16 sm:w-16"
+          />
         </header>
 
         {/* Controls */}
