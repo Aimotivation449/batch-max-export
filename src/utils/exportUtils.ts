@@ -287,6 +287,9 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
     { width: 10 }, { width: 10 }, { width: 12 },
     { width: 10 }, { width: 10 }, { width: 12 }
   ];
+  // Vertical merges for Sl No / Item Name / Unit across each item's batch rows
+  wsMain['!merges'] = excelMerges;
+  
   
   // Apply right alignment to all numeric columns (qty, rate, amount columns)
   const range = XLSX.utils.decode_range(wsMain['!ref'] || 'A1');
