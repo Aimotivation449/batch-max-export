@@ -206,9 +206,12 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   
   const startRow = mainData.length; // Track row numbers for styling
   
+  const excelMerges: XLSX.Range[] = [];
+
   items.forEach((item, index) => {
     const batchRows = createBatchRows(item, index + 1);
-    
+    const itemStartRow = mainData.length;
+
     batchRows.forEach((row) => {
       mainData.push([
         row.slNo || '',
@@ -231,6 +234,13 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
         row.balance.amount
       ]);
     });
+
+    // Merge Sl No, Item Name and Unit cells across all batch rows of this item
+    if (batchRows.length > 1) {
+      [0, 1, 2].forEach((col) => {
+        excelMerges.push({ s: { r: itemStartRow, c: col }, e: { r: itemStartRow + batchRows.length - 1, c: col } });
+      });
+    }
     
     // Per-item Grand Total row
     const prevBatches = item.prevMonth.batches || [];
@@ -277,6 +287,9 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
     { width: 10 }, { width: 10 }, { width: 12 },
     { width: 10 }, { width: 10 }, { width: 12 }
   ];
+  // Vertical merges for Sl No / Item Name / Unit across each item's batch rows
+  wsMain['!merges'] = excelMerges;
+  
   
   // Apply right alignment to all numeric columns (qty, rate, amount columns)
   const range = XLSX.utils.decode_range(wsMain['!ref'] || 'A1');
@@ -427,9 +440,9 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
     
     batchRows.forEach((row, batchIndex) => {
       tableData.push([
-        batchIndex === 0 ? (itemIndex + 1).toString() : '',
-        batchIndex === 0 ? item.name : '',
-        batchIndex === 0 ? item.unit : '',
+        batchIndex === 0 ? { content: (itemIndex + 1).toString(), rowSpan: batchRows.length, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold', fontSize: 8 } } : '',
+        batchIndex === 0 ? { content: item.name, rowSpan: batchRows.length, styles: { halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 8 } } : '',
+        batchIndex === 0 ? { content: item.unit, rowSpan: batchRows.length, styles: { halign: 'center', valign: 'middle', fontSize: 8 } } : '',
         row.prevMonth.qty,
         row.prevMonth.rate,
         row.prevMonth.amount,
