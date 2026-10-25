@@ -234,6 +234,13 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
         row.balance.amount
       ]);
     });
+
+    // Merge Sl No, Item Name and Unit cells across all batch rows of this item
+    if (batchRows.length > 1) {
+      [0, 1, 2].forEach((col) => {
+        excelMerges.push({ s: { r: itemStartRow, c: col }, e: { r: itemStartRow + batchRows.length - 1, c: col } });
+      });
+    }
     
     // Per-item Grand Total row
     const prevBatches = item.prevMonth.batches || [];
