@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus, Edit, X, Check } from 'lucide-react';
-import { calculateFIFORate, calculateTotalReceived, calculateExpenditureBatches, calculateBalanceNextMonth } from '@/utils/fifoCalculations';
+import { calculateFIFORate, calculateTotalReceived, calculateExpenditureBatches, calculateBalanceNextMonth, calculateTotalReceivedBatches, calculateBalanceBatches } from '@/utils/fifoCalculations';
 import { useState } from 'react';
 
 interface InventoryTableProps {
