@@ -206,9 +206,12 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   
   const startRow = mainData.length; // Track row numbers for styling
   
+  const excelMerges: XLSX.Range[] = [];
+
   items.forEach((item, index) => {
     const batchRows = createBatchRows(item, index + 1);
-    
+    const itemStartRow = mainData.length;
+
     batchRows.forEach((row) => {
       mainData.push([
         row.slNo || '',
