@@ -207,6 +207,11 @@ export function exportToExcel(items: InventoryItem[], monthName: string, editabl
   const startRow = mainData.length; // Track row numbers for styling
   
   const excelMerges: XLSX.Range[] = [];
+  // Merge header cells: Sl No / Item Name / Unit span both header rows, group titles span Qty/Rate/Amount
+  const h1 = startRow - 2, h2 = startRow - 1;
+  [0, 1, 2].forEach((col) => excelMerges.push({ s: { r: h1, c: col }, e: { r: h2, c: col } }));
+  [3, 6, 9, 12, 15].forEach((col) => excelMerges.push({ s: { r: h1, c: col }, e: { r: h1, c: col + 2 } }));
+
 
   items.forEach((item, index) => {
     const batchRows = createBatchRows(item, index + 1);
