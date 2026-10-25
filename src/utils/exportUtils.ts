@@ -440,9 +440,9 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
     
     batchRows.forEach((row, batchIndex) => {
       tableData.push([
-        batchIndex === 0 ? (itemIndex + 1).toString() : '',
-        batchIndex === 0 ? item.name : '',
-        batchIndex === 0 ? item.unit : '',
+        batchIndex === 0 ? { content: (itemIndex + 1).toString(), rowSpan: batchRows.length, styles: { halign: 'center', valign: 'middle', fontStyle: 'bold', fontSize: 8 } } : '',
+        batchIndex === 0 ? { content: item.name, rowSpan: batchRows.length, styles: { halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 8 } } : '',
+        batchIndex === 0 ? { content: item.unit, rowSpan: batchRows.length, styles: { halign: 'center', valign: 'middle', fontSize: 8 } } : '',
         row.prevMonth.qty,
         row.prevMonth.rate,
         row.prevMonth.amount,
