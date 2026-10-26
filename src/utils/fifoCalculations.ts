@@ -82,5 +82,5 @@ export function calculateBalanceNextMonth(item: InventoryItem) {
   const amount = balanceBatches.reduce((sum, b) => sum + (b.qty * b.rate), 0);
   const rate = qty > 0 ? amount / qty : 0;
   
-  return { qty, rate, amount };
+  return { qty, rate, amount, batches: balanceBatches };
 }
