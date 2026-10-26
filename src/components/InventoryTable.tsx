@@ -436,17 +436,21 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                   {/* Total Received */}
                   <td className="border border-border/50 p-2 bg-purple-50/50 dark:bg-purple-950/20">
                     <div className="font-semibold text-sm text-right">{Math.floor(totalReceived.qty)} {item.unit}</div>
+                    {renderBatches(totalReceivedBatches, 'qty', item.unit)}
                   </td>
                   <td className="border border-border/50 p-2 bg-purple-50/50 dark:bg-purple-950/20">
                     <div className="font-semibold text-sm text-right">₹{totalReceived.rate.toFixed(2)}</div>
+                    {renderBatches(totalReceivedBatches, 'rate')}
                   </td>
                   <td className="border border-border/50 p-2 bg-purple-50/50 dark:bg-purple-950/20">
                     <div className="font-semibold text-sm text-right">₹{totalReceived.amount.toFixed(2)}</div>
+                    {renderBatches(totalReceivedBatches, 'amount')}
                   </td>
 
                   {/* Expenditure */}
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
                     <div className="font-semibold text-sm text-right">{Math.floor(item.expenditureThisMonth.qty)} {item.unit}</div>
+                    {renderBatches(expenditureBatches, 'qty', item.unit)}
                     <Input
                       type="number"
                       placeholder="Enter Qty"
@@ -458,20 +462,25 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                   </td>
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
                     <div className="font-semibold text-sm text-right">₹{expenditureData.rate.toFixed(2)}</div>
+                    {renderBatches(expenditureBatches, 'rate')}
                   </td>
                   <td className="border border-border/50 p-2 bg-red-50/50 dark:bg-red-950/20">
                     <div className="font-semibold text-sm text-right">₹{expenditureData.amount.toFixed(2)}</div>
+                    {renderBatches(expenditureBatches, 'amount')}
                   </td>
 
                   {/* Balance */}
                   <td className="border border-border/50 p-2 bg-green-50/50 dark:bg-green-950/20">
                     <div className="font-semibold text-sm text-right">{Math.floor(balanceData.qty)} {item.unit}</div>
+                    {renderBatches(balanceBatches, 'qty', item.unit)}
                   </td>
                   <td className="border border-border/50 p-2 bg-green-50/50 dark:bg-green-950/20">
                     <div className="font-semibold text-sm text-right">₹{balanceData.rate.toFixed(2)}</div>
+                    {renderBatches(balanceBatches, 'rate')}
                   </td>
                   <td className="border border-border/50 p-2 bg-green-50/50 dark:bg-green-950/20">
                     <div className="font-semibold text-sm text-right">₹{balanceData.amount.toFixed(2)}</div>
+                    {renderBatches(balanceBatches, 'amount')}
                   </td>
 
                   <td className="border border-border/50 p-2 text-center">
