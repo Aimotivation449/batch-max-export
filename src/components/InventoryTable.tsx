@@ -298,6 +298,20 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
               const totalReceived = calculateTotalReceived(item);
               const expenditureData = calculateExpenditureBatches(item);
               const balanceData = calculateBalanceNextMonth(item);
+              
+              // Batch-wise lists for Total Received (equal rates merged, same as export),
+              // Expenditure (FIFO) and Balance (remaining batches)
+              const totalReceivedBatches: Batch[] = [];
+              [...item.prevMonth.batches, ...item.receivedThisMonth.batches].forEach((b, idx) => {
+                const existing = totalReceivedBatches.find(x => x.rate === b.rate);
+                if (existing) {
+                  existing.qty += b.qty;
+                } else {
+                  totalReceivedBatches.push({ id: idx, qty: b.qty, rate: b.rate });
+                }
+              });
+              const expenditureBatches = expenditureData.batches || [];
+              const balanceBatches = balanceData.batches || [];
 
               return (
                 <tr key={item.id} className="hover:bg-muted/50 transition-colors">
