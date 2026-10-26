@@ -311,7 +311,7 @@ export function InventoryTable({ items, onUpdate }: InventoryTableProps) {
                 }
               });
               const expenditureBatches = expenditureData.batches || [];
-              const balanceBatches = balanceData.batches || [];
+              const balanceBatches = (balanceData.batches || []).map((b, idx) => ({ ...b, id: idx }));
 
               return (
                 <tr key={item.id} className="hover:bg-muted/50 transition-colors">
