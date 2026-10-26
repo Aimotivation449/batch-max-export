@@ -512,7 +512,9 @@ export function exportToPDF(items: InventoryItem[], monthName: string, editableS
       { content: 'Expenditure', colSpan: 3 },
       { content: 'Balance', colSpan: 3 }
     ], [
-      '', '', '',
+      // NOTE: columns 0-2 (Sl No / Item Name / Unit) are covered by the rowSpan
+      // cells in the row above, so this row must NOT include placeholder cells
+      // for them — autoTable skips spanned columns automatically.
       'Qty', 'Rate', 'Amount',
       'Qty', 'Rate', 'Amount',
       'Qty', 'Rate', 'Amount',
