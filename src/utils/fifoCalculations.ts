@@ -20,47 +20,6 @@ export function calculateTotalReceived(item: InventoryItem) {
   return { qty, rate, amount };
 }
 
-// Total Received batches: prev + received combined, batches with the same rate merged (sum qty)
-export function calculateTotalReceivedBatches(item: InventoryItem): Batch[] {
-  const combined = [...(item.prevMonth.batches || []), ...(item.receivedThisMonth.batches || [])];
-  const merged: Batch[] = [];
-  for (const batch of combined) {
-    const existing = merged.find(b => b.rate === batch.rate);
-    if (existing) {
-      existing.qty += batch.qty;
-    } else {
-      merged.push({ ...batch });
-    }
-  }
-  return merged;
-}
-
-// Balance Next Month batches: FIFO leftover of each batch after expenditure
-export function calculateBalanceBatches(item: InventoryItem): Batch[] {
-  let remainingExpenditure = item.expenditureThisMonth.qty;
-  const balanceBatches: Batch[] = [];
-  const allBatches = [
-    ...(item.prevMonth.batches || []),
-    ...(item.receivedThisMonth.batches || [])
-  ];
-
-  for (const batch of allBatches) {
-    if (remainingExpenditure > 0) {
-      const qtyUsed = Math.min(batch.qty, remainingExpenditure);
-      remainingExpenditure -= qtyUsed;
-      const remainingQty = batch.qty - qtyUsed;
-      if (remainingQty > 0) {
-        balanceBatches.push({ id: batch.id, qty: remainingQty, rate: batch.rate });
-      }
-    } else {
-      balanceBatches.push({ ...batch });
-    }
-  }
-
-  return balanceBatches;
-}
-
-
 export function calculateExpenditureBatches(item: InventoryItem) {
   const expenditureQty = item.expenditureThisMonth.qty;
   let remainingExpenditure = expenditureQty;
